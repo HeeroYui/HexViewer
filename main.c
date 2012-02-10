@@ -54,10 +54,10 @@ void usage(void)
 	printf("\t\t[RIGHT] Go down 50 line in the view (one screen)\n");
 	printf("\t\tAdd padding : \n");
 	printf("\t\t\t[o]   Add  1 Byte  padding at the left file\n");
-	printf("\t\t\t[p]   Add 16 Bytes padding at the left file\n");
-	printf("\t\t\t[l]   Add  1 Byte  padding at the right file\n");
-	printf("\t\t\t[m]   Add 16 Bytes padding at the right file\n");
-	printf("\t\t\t[k]   reset padding\n");
+	printf("\t\t\t[O]   Add 16 Bytes padding at the left file\n");
+	printf("\t\t\t[p]   Add  1 Byte  padding at the right file\n");
+	printf("\t\t\t[P]   Add 16 Bytes padding at the right file\n");
+	printf("\t\t\t[m]   reset padding\n");
 	printf("\t\n");
 	/*
 	printf("\tTODO : \n");
@@ -287,24 +287,20 @@ int main (int argc, char**argv)
 					break;
 				// Add padding offset between left an right file
 				case 'o':
-				case 'O':
-					displayPaddingOffset(1);
-					break;
-				case 'l':
-				case 'L':
 					displayPaddingOffset(-1);
 					break;
+				case 'O':
+					displayPaddingOffset(-16);
+					break;
 				case 'p':
+					displayPaddingOffset(1);
+					break;
 				case 'P':
 					displayPaddingOffset(16);
 					break;
+				// Clear the padding
 				case 'm':
 				case 'M':
-					displayPaddingOffset(-16);
-					break;
-				// Clear the padding
-				case 'k':
-				case 'K':
 					displayPaddingOffsetClear();
 					break;
 			}
