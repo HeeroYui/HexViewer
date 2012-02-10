@@ -30,9 +30,9 @@
 
 #include "generalDefine.h"
 
-void setOfsetFile(I32 offset);
-void upDownOfsetFile(I32 offset);
-U32 getOfsetFile(void);
+void setOfsetFile(int32_t offset);
+void upDownOfsetFile(int32_t offset);
+uint32_t getOfsetFile(void);
 
 bool getParamModification();
 

@@ -32,16 +32,16 @@
 #include <unistd.h>
 #include <string.h>
 
-typedef unsigned char                   U8;
-typedef   signed char                   I8;
-typedef unsigned short int              U16;
-typedef   signed short int              I16;
-typedef unsigned long int               U32;
-typedef   signed long int               I32;
-typedef unsigned long long int          U64;
-typedef   signed long long int          I64;
-//typedef unsigned long long long int     U128;
-//typedef   signed long long long int     I128;
+typedef unsigned char                   uint8_t;
+typedef   signed char                   int8_t;
+typedef unsigned short int              uint16_t;
+typedef   signed short int              int16_t;
+typedef unsigned long int               uint32_t;
+//typedef   signed long int               int32_t;
+typedef unsigned long long int          uint64_t;
+typedef   signed long long int          int64_t;
+//typedef unsigned long long long int     uint128_t;
+//typedef   signed long long long int     int128_t;
 
 //regular colors
 #define COLOR_BLACK         "\e[0;30m"
