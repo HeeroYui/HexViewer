@@ -52,6 +52,12 @@ void usage(void)
 	printf("\t\t[DOWN]  Go down 5 line in the view\n");
 	printf("\t\t[LEFT]  Go up 50 line in the view (one screen)\n");
 	printf("\t\t[RIGHT] Go down 50 line in the view (one screen)\n");
+	printf("\t\tAdd padding : \n");
+	printf("\t\t\t[o]   Add  1 Byte  padding at the left file\n");
+	printf("\t\t\t[p]   Add 16 Bytes padding at the left file\n");
+	printf("\t\t\t[l]   Add  1 Byte  padding at the right file\n");
+	printf("\t\t\t[m]   Add 16 Bytes padding at the right file\n");
+	printf("\t\t\t[k]   reset padding\n");
 	printf("\t\n");
 	/*
 	printf("\tTODO : \n");
