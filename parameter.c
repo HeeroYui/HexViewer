@@ -27,6 +27,7 @@
 // Parameter  Local Value : 
 
 static uint32_t fileOfset = 0;
+static uint32_t paddingOffset = 0;
 static bool parmamModifier = true;
 
 
@@ -68,6 +69,24 @@ uint32_t getOfsetFile(void)
 	return fileOfset;
 }
 
+void displayPaddingOffset(int32_t size)
+{
+	paddingOffset += size;
+	parmamModifier = true;
+}
+
+void displayPaddingOffsetClear(void)
+{
+	paddingOffset = 0;
+	parmamModifier = true;
+}
+
+int32_t getPaddingOffsetFile(void)
+{
+	return paddingOffset;
+}
+
+
 bool getParamModification()
 {
 	if (parmamModifier == true) {
@@ -78,7 +97,9 @@ bool getParamModification()
 	}
 }
 
-
+void needRedraw(void) {
+	parmamModifier = true;
+}
 
 void nextType(void)
 {
@@ -137,3 +158,7 @@ showTypeSize_te getTypeSize(void)
 {
 	return curentTypeSize;
 }
+
+
+
+

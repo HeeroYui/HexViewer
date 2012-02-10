@@ -30,6 +30,7 @@
 
 
 
+bool  filePresent[2] = {false, false};
 FILE *filePointer[2] = {NULL, NULL};
 uint32_t filesize[2] = {0, 0};
 char fileName[2][2096] = {"",""};
@@ -52,6 +53,7 @@ void usage(void)
 	printf("\t\t[LEFT]  Go up 50 line in the view (one screen)\n");
 	printf("\t\t[RIGHT] Go down 50 line in the view (one screen)\n");
 	printf("\t\n");
+	/*
 	printf("\tTODO : \n");
 	printf("\t\t- The print of 128 bytes\n");
 	printf("\t\t- The print in Octal\n");
@@ -67,6 +69,7 @@ void usage(void)
 	printf("\t\t- Add to the croling bar the differences in the two files\n");
 	printf("\t\t- The research of a sequency in the two files                 ==> [R]\n");
 	printf("\t\t- The jump to an offset directly                              ==> [J] \n");
+	*/
 	/*printf("\t\t- \n");*/
 }
 
@@ -87,16 +90,70 @@ int32_t findFirstDiff(void)
 	    || NULL == filePointer[1] ) {
 		return 0;
 	}
+	if(NULL != filePointer[0]) {
+		fseek ( filePointer[0] , 0 , SEEK_SET );
+	}
+	if(NULL != filePointer[1]) {
+		fseek ( filePointer[1] , 0 , SEEK_SET );
+	}
 	while (  fread(&data1, sizeof(uint8_t), 1, filePointer[0])  == 1
 	         && fread(&data2, sizeof(uint8_t), 1, filePointer[1])  == 1)
 	{
 		offset ++;
-		if (data1 != data2)
-		{
+		if (data1 != data2) {
 			return offset;
 		}
 	}
 	return offset;
+}
+
+void UpdateFilesSize(void)
+{
+	// get size file 1
+	if ( NULL != filePointer[0]) {
+		fseek ( filePointer[0] , 0 , SEEK_END );
+		filesize[0] = ftell (filePointer[0]);
+		fseek ( filePointer[0] , 0 , SEEK_SET );
+	}
+	// get size file 2
+	if ( NULL != filePointer[1]) {
+		fseek ( filePointer[1] , 0 , SEEK_END );
+		filesize[1] = ftell (filePointer[1]);
+		fseek ( filePointer[1] , 0 , SEEK_SET );
+	}
+}
+
+void OpenFiles(void) {
+	filePointer[0] = NULL;
+	filePointer[1] = NULL;
+	filesize[0] = 0;
+	filesize[1] = 0;
+	if (true == filePresent[0]) {
+		// Open file 1
+		filePointer[0] = fopen(fileName[0], "rb");
+		if ( NULL == filePointer[0]) {
+			printf("Can not Open [File_1] = %s\n", fileName[0]);
+		}
+	}
+	if (true == filePresent[1]) {
+		// open File 2
+		filePointer[1] = fopen(fileName[1], "rb");
+		if ( NULL == filePointer[1]) {
+			printf("Can not Open [File_2] = %s\n", fileName[1]);
+		}
+	}
+	UpdateFilesSize();
+}
+
+
+void CloseFiles(void) {
+	if (NULL != filePointer[0]) {
+		fclose(filePointer[0]);
+		filePointer[0] = NULL;
+	} if (NULL != filePointer[1]) {
+		fclose(filePointer[1]);
+		filePointer[1] = NULL;
+	}
 }
 
 
@@ -105,51 +162,27 @@ int main (int argc, char**argv)
 	int32_t first_Error = 0;
 	filePointer[0] = NULL;
 	filePointer[1] = NULL;
-	filesize[0] = 0;
-	filesize[1] = 0;
 	strcpy(fileName[0], "No-File");
 	strcpy(fileName[1], "No-File");
 	
+	// check error
 	if (3 < argc || argc < 2) {
 		printf("You set more than 3 argument at the commande line\n");
 		usage();
 		return -1;
 	}
-	
+	// one file
 	if (2 <= argc) {
-		// Open file 1
-		filePointer[0] = fopen(argv[1], "rb");
 		strcpy(fileName[0], argv[1]);
-		if ( NULL == filePointer[0]) {
-			printf("Can not Open [File_1] = %s\n", fileName[0]);
-		}
-		// get size file 1
-		if ( NULL != filePointer[0]) {
-			fseek ( filePointer[0] , 0 , SEEK_END );
-			filesize[0] = ftell (filePointer[0]);
-			fseek ( filePointer[0] , 0 , SEEK_SET );
-		} else {
-			filesize[0] = 0;
-		}
+		filePresent[0] = true;
 	}
+	// a second file
 	if (3 <= argc) {
-		// open File 2
-		filePointer[1] = fopen(argv[2], "rb");
 		strcpy(fileName[1], argv[2]);
-		if ( NULL == filePointer[1]) {
-			printf("Can not Open [File_2] = %s\n", fileName[1]);
-		}
-		// get size file 2
-		if ( NULL != filePointer[1]) {
-			fseek ( filePointer[1] , 0 , SEEK_END );
-			filesize[1] = ftell (filePointer[1]);
-			fseek ( filePointer[1] , 0 , SEEK_SET );
-		} else {
-			filesize[1] = 0;
-		}
+		filePresent[1] = true;
 	}
-	// try to find the first error...
-	first_Error = findFirstDiff();
+	// open the files
+	OpenFiles();
 	
 	// rendre la lecture des données non canonique
 	system("stty -icanon");
@@ -214,7 +247,10 @@ int main (int argc, char**argv)
 				// find the first ERROR
 				case 'f':
 				case 'F':
-					setOfsetFile((first_Error/16)*16 - 256);
+					// try to find the first error...
+					first_Error = findFirstDiff();
+					setOfsetFile((first_Error/16)*16 - 128);
+					needRedraw();
 					break;
 				// find the first ERROR
 				case 'a':
@@ -225,6 +261,7 @@ int main (int argc, char**argv)
 				case 'z':
 				case 'Z':
 					{
+						UpdateFilesSize();
 						static bool whichElement = false;
 						if (whichElement == false) {
 							whichElement = true;
@@ -235,6 +272,35 @@ int main (int argc, char**argv)
 						}
 					}
 					break;
+				// Reload the 2 files
+				case 'r':
+				case 'R':
+					CloseFiles();
+					OpenFiles();
+					needRedraw();
+					break;
+				// Add padding offset between left an right file
+				case 'o':
+				case 'O':
+					displayPaddingOffset(1);
+					break;
+				case 'l':
+				case 'L':
+					displayPaddingOffset(-1);
+					break;
+				case 'p':
+				case 'P':
+					displayPaddingOffset(16);
+					break;
+				case 'm':
+				case 'M':
+					displayPaddingOffset(-16);
+					break;
+				// Clear the padding
+				case 'k':
+				case 'K':
+					displayPaddingOffsetClear();
+					break;
 			}
 		}
 	} else {
@@ -242,11 +308,7 @@ int main (int argc, char**argv)
 	}
 	
 exit_programme : 
-	if (NULL != filePointer[0]) {
-		fclose(filePointer[0]);
-	} if (NULL != filePointer[1]) {
-		fclose(filePointer[1]);
-	}
+	CloseFiles();
 	
 	// remettre la lecture des données canonique
 	system("stty icanon");

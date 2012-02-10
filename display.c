@@ -26,15 +26,69 @@
 
 extern FILE *filePointer[2];
 extern char fileName[2][2096];
+
+
+void drawLine(void)
+{
+	showTypeSize_te mySize = getTypeSize();
+	showType_te myType = getType();
+	switch(myType)
+	{
+		case SHOW_TYPE_DECIMAL_SIGNED:
+		case SHOW_TYPE_DECIMAL_UNSIGNED:
+			switch(mySize)
+			{
+				case SHOW_TYPE_SIZE_8:
+					printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_16:
+					printf("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_32:
+					printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_64:
+					printf("-------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				default:
+					break;
+			}
+			break;
+		case SHOW_TYPE_HEX:
+		default : 
+			switch(mySize)
+			{
+				case SHOW_TYPE_SIZE_8:
+					printf("---------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_16:
+					printf("-----------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_32:
+					printf("---------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				case SHOW_TYPE_SIZE_64:
+					printf("-----------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					break;
+				default:
+					break;
+			}
+			break;
+	}
+}
+
+
+
 void showConfiguration(void)
 {
 	showType_te myType = getType();
 	showTypeSize_te mySize = getTypeSize();
 	
 	printf(GO_TOP);
-	printf(COLOR_BOLD_GREEN"----------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+	printf(COLOR_BOLD_GREEN);
+	drawLine();
 	printf(COLOR_GREEN);
-	printf("| hewViewer    |  ofset : %7d octets  | ", (int)getOfsetFile());
+	printf("| hexViewer          |  offset : %7d octets  | ", (int)getOfsetFile());
 	printf("  Type (t) : ");
 	switch(myType)
 	{
@@ -75,10 +129,11 @@ void showConfiguration(void)
 			break;
 	}
 	printf(COLOR_NORMAL"\n");
-	printf(COLOR_GREEN"| File Left  << | " COLOR_BOLD_GREEN "%s\n" COLOR_NORMAL, fileName[0]);
-	printf(COLOR_GREEN"| File Right >> | " COLOR_BOLD_GREEN "%s\n"COLOR_NORMAL,   fileName[1]);
+	printf(COLOR_GREEN"| File Left  <<      | " COLOR_BOLD_GREEN "%s\n" COLOR_NORMAL, fileName[0]);
+	printf(COLOR_GREEN"| File Right      >> | " COLOR_BOLD_GREEN "%s\n"COLOR_NORMAL,   fileName[1]);
 
-	printf(COLOR_BOLD_GREEN"----------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+	printf(COLOR_BOLD_GREEN);
+	drawLine();
 }
 
 void printNoElement(showType_te localType, showTypeSize_te localSize)
@@ -209,7 +264,8 @@ typedef union {
 	uint64_t  data_64 [2];
 }inputData_tu;
 
-void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosition)
+
+void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosition, int32_t currentPadding)
 {
 	inputData_tu data1;
 	inputData_tu data2;
@@ -222,42 +278,28 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 	showType_te myType = getType();
 	
 	// Display the main show
-	printf(COLOR_BOLD_YELLOW"Ofset :    |         | ");
+	printf(COLOR_BOLD_YELLOW"   File offset       | ");
 	switch(myType)
 	{
 		case SHOW_TYPE_DECIMAL_SIGNED:
 		case SHOW_TYPE_DECIMAL_UNSIGNED:
-			for (i = 0 ; i<2 ; i++ )
-			{
+			for (i = 0 ; i<2 ; i++ ) {
 				switch(mySize)
 				{
 					case SHOW_TYPE_SIZE_8:
-						for (j=0; j<2 ; j++ ) {
-							printf("  +0   +1   +2   +3   +4   +5   +6   +7   +8   +9   +A   +B   +C   +D   +E   +F  | ");
-						}
+						printf("  +0   +1   +2   +3   +4   +5   +6   +7   +8   +9   +A   +B   +C   +D   +E   +F  | ");
 						break;
 					case SHOW_TYPE_SIZE_16:
-						for (j=0; j<2 ; j++ ) {
-							printf("     +0      +2      +4      +6      +8      +A      +C      +E  | ");
-						}
+						printf("     +0      +2      +4      +6      +8      +A      +C      +E  | ");
 						break;
 					case SHOW_TYPE_SIZE_32:
-						for (j=0; j<2 ; j++ ) {
-							printf("            +0             +4             +8             +C  | ");
-						}
+						printf("            +0             +4             +8             +C  | ");
 						break;
 					case SHOW_TYPE_SIZE_64:
-						for (j=0; j<2 ; j++ ) {
-							printf("                   +0                    +8  | ");
-						}
+						printf("                   +0                    +8  | ");
 						break;
 					default:
 						break;
-				}
-				if (i == 0)
-				{
-					printf(COLOR_NORMAL"\n");
-					printf(COLOR_BOLD_MAGENTA"           |  ofset  | ");
 				}
 			}
 			break;
@@ -267,75 +309,100 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 				switch(mySize)
 				{
 					case SHOW_TYPE_SIZE_8:
-						for (j=0; j<2 ; j++ ) {
-							printf("+0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F  | ");
-						}
+						printf("+0 +1 +2 +3 +4 +5 +6 +7 +8 +9 +A +B +C +D +E +F  | ");
 						break;
 					case SHOW_TYPE_SIZE_16:
-						for (j=0; j<2 ; j++ ) {
-							printf("  +0   +2   +4   +6   +8   +A   +C   +E  | ");
-						}
+						printf("  +0   +2   +4   +6   +8   +A   +C   +E  | ");
 						break;
 					case SHOW_TYPE_SIZE_32:
-						for (j=0; j<2 ; j++ ) {
-							printf("      +0       +4       +8       +C  | ");
-						}
+						printf("      +0       +4       +8       +C  | ");
 						break;
 					case SHOW_TYPE_SIZE_64:
-						for (j=0; j<2 ; j++ ) {
-							printf("              +0               +8  | ");
-						}
+						printf("              +0               +8  | ");
 						break;
 					default:
 						break;
 				}
-				if (i == 0)
-				{
-					printf(COLOR_NORMAL"\n");
-					printf(COLOR_BOLD_MAGENTA"           |  ofset  | ");
-				}
 			}
 			break;
 	}
+	printf(COLOR_BOLD_YELLOW"   File offset       | ");
 	printf(COLOR_NORMAL"\n");
 	
 	
 	// Display the main show
-	printf(COLOR_BOLD_YELLOW"----------------------------------------------------------------------------------------------------------------------------");
-	printf(COLOR_NORMAL"\n");
+	printf(COLOR_BOLD_YELLOW);
+	drawLine();
 	for (j=0; j < NB_MAX_LINE; j++) {
 		uint32_t readFile1 = 0;
 		uint32_t readFile2 = 0;
-		uint32_t lineNumber = 0;
+		int32_t lineNumber = 0;
 		uint32_t numberOfCycle;
 		// read data in files : 
 		memset(data1.data_8, 0, 16 * sizeof(uint8_t));
 		memset(data2.data_8, 0, 16 * sizeof(uint8_t));
+		// Generate the ofset in the file
+		int32_t positionStartDisplayFile1 = curentFilePosition + j*NB_DATA_PER_LINE*4;
+		int32_t positionStartDisplayFile2 = curentFilePosition + j*NB_DATA_PER_LINE*4;
+		if (currentPadding < 0) {
+			positionStartDisplayFile1 += currentPadding;
+		} else {
+			positionStartDisplayFile2 -= currentPadding;
+		}
+		readFile1 = 0;
+		int32_t readStartFile1 = 16;
 		if (filePointer1 != NULL) {
-			readFile1 = fread(data1.data_8, sizeof(uint8_t), 16, filePointer1);
+			if (positionStartDisplayFile1 >= 0) {
+				fseek(filePointer1 , positionStartDisplayFile1 , SEEK_SET );
+				readFile1 = fread(data1.data_8, sizeof(uint8_t), 16, filePointer1);
+				readStartFile1 = 0;
+			} else if (positionStartDisplayFile1 > -NB_DATA_PER_LINE*4) {
+				fseek(filePointer1 , 0 , SEEK_SET );
+				// Special case of the partial display ...
+				readFile1 = fread(data1.data_8 - positionStartDisplayFile1, sizeof(uint8_t), NB_DATA_PER_LINE*4 + positionStartDisplayFile1, filePointer1);
+				readStartFile1 = NB_DATA_PER_LINE*4 - readFile1;
+				readFile1 = 16;
+			}
 		}
+		readFile2 = 0;
+		int32_t readStartFile2 = 16;
 		if (filePointer2 != NULL) {
-			readFile2 = fread(data2.data_8, sizeof(uint8_t), 16, filePointer2);
+			if (positionStartDisplayFile2 >= 0) {
+				fseek(filePointer2 , positionStartDisplayFile2 , SEEK_SET );
+				readFile2 = fread(data2.data_8, sizeof(uint8_t), 16, filePointer2);
+				readStartFile2 = 0;
+			} else if (positionStartDisplayFile2 > -NB_DATA_PER_LINE*4) {
+				fseek(filePointer2 , 0 , SEEK_SET );
+				// Special case of the partial display ...
+				readFile2 = fread(data2.data_8 - positionStartDisplayFile2, sizeof(uint8_t), NB_DATA_PER_LINE*4 + positionStartDisplayFile2, filePointer2);
+				readStartFile2 = NB_DATA_PER_LINE*4 - readFile2;
+				readFile2 = 16;
+			}
 		}
+		
 		// display the line number
-		lineNumber = j * (NB_DATA_PER_LINE*4) + CurentFilePosition;
-		printf(COLOR_BOLD_YELLOW"0x%08x | "COLOR_NORMAL, (unsigned int)lineNumber);
-		switch(mySize)
-		{
-			case SHOW_TYPE_SIZE_8:
-				printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber));
-				break;
-			case SHOW_TYPE_SIZE_16:
-				printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/2));
-				break;
-			case SHOW_TYPE_SIZE_32:
-				printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/4));
-				break;
-			case SHOW_TYPE_SIZE_64:
-				printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/8));
-				break;
-			default:
-				break;
+		lineNumber = positionStartDisplayFile1;
+		if (lineNumber+NB_DATA_PER_LINE*4-1 >= 0) {
+			printf(COLOR_BOLD_YELLOW"0x%08x | "COLOR_NORMAL, (unsigned int)lineNumber);
+			switch(mySize)
+			{
+				case SHOW_TYPE_SIZE_8:
+					printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber));
+					break;
+				case SHOW_TYPE_SIZE_16:
+					printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/2));
+					break;
+				case SHOW_TYPE_SIZE_32:
+					printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/4));
+					break;
+				case SHOW_TYPE_SIZE_64:
+					printf(COLOR_BOLD_MAGENTA"%7d | "COLOR_NORMAL, (int)(lineNumber/8));
+					break;
+				default:
+					break;
+			}
+		} else {
+			printf(COLOR_BOLD_YELLOW"           | "COLOR_BOLD_MAGENTA"        | "COLOR_NORMAL);
 		}
 		if (readFile1 == 0) {
 			switch(mySize)
@@ -371,8 +438,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_8:
 						numberOfCycle = 16;
 						for (i = 0; i< numberOfCycle; i++) {
-							if (readFile1 >= (i+1)) {
-								bool OutOfRange = (readFile2 >= (i+1));
+							if (readFile1 >= (i+1) && readStartFile1 <= (int32_t)i ) {
+								bool OutOfRange = (readFile2 >= (i+1) && readStartFile2 <= (int32_t)i);
 								bool identic    = (data1.data_8[i] != data2.data_8[i]);
 								printElement((uint64_t)data1.data_8[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -383,8 +450,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_16:
 						numberOfCycle = 8;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile1/2) >= (i+1)) {
-								bool OutOfRange = ((readFile2/2) >= (i+1));
+							if ((readFile1/2) >= (i+1) && readStartFile1/2 <= (int32_t)i) {
+								bool OutOfRange = ((readFile2/2) >= (i+1) && readStartFile2/2 <= (int32_t)i);
 								bool identic    = (data1.data_16[i] != data2.data_16[i]);
 								printElement((uint64_t)data1.data_16[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -395,8 +462,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_32:
 						numberOfCycle = 4;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile1/4) >= (i+1)) {
-								bool OutOfRange = ((readFile2/4) >= (i+1));
+							if ((readFile1/4) >= (i+1) && readStartFile1/4 <= (int32_t)i) {
+								bool OutOfRange = ((readFile2/4) >= (i+1) && readStartFile2/4 <= (int32_t)i);
 								bool identic    = (data1.data_32[i] != data2.data_32[i]);
 								printElement((uint64_t)data1.data_32[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -407,8 +474,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_64:
 						numberOfCycle = 2;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile1/8) >= (i+1)) {
-								bool OutOfRange = ((readFile2/8) >= (i+1));
+							if ((readFile1/8) >= (i+1) && readStartFile1/8 <= (int32_t)i) {
+								bool OutOfRange = ((readFile2/8) >= (i+1) && readStartFile2/8 <= (int32_t)i);
 								bool identic    = (data1.data_64[i] != data2.data_64[i]);
 								printElement((uint64_t)data1.data_64[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -457,8 +524,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_8:
 						numberOfCycle = 16;
 						for (i = 0; i< numberOfCycle; i++) {
-							if (readFile2 >= (i+1)) {
-								bool OutOfRange = (readFile1 >= (i+1));
+							if (readFile2 >= (i+1) && readStartFile2 <= (int32_t)i ) {
+								bool OutOfRange = (readFile1 >= (i+1) && readStartFile1 <= (int32_t)i);
 								bool identic    = (data1.data_8[i] != data2.data_8[i]);
 								printElement((uint64_t)data2.data_8[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -469,8 +536,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_16:
 						numberOfCycle = 8;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile2/2) >= (i+1)) {
-								bool OutOfRange = ((readFile1/2) >= (i+1));
+							if ((readFile2/2) >= (i+1) && readStartFile2/2 <= (int32_t)i ) {
+								bool OutOfRange = ((readFile1/2) >= (i+1) && readStartFile1/2 <= (int32_t)i);
 								bool identic    = (data1.data_16[i] != data2.data_16[i]);
 								printElement((uint64_t)data2.data_16[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -481,8 +548,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_32:
 						numberOfCycle = 4;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile2/4) >= (i+1)) {
-								bool OutOfRange = ((readFile1/4) >= (i+1));
+							if ((readFile2/4) >= (i+1) && readStartFile2/4 <= (int32_t)i ) {
+								bool OutOfRange = ((readFile1/4) >= (i+1) && readStartFile1/4 <= (int32_t)i);
 								bool identic    = (data1.data_32[i] != data2.data_32[i]);
 								printElement((uint64_t)data2.data_32[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -493,8 +560,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 					case SHOW_TYPE_SIZE_64:
 						numberOfCycle = 2;
 						for (i = 0; i< numberOfCycle; i++) {
-							if ((readFile2/8) >= (i+1)) {
-								bool OutOfRange = ((readFile1/8) >= (i+1));
+							if ((readFile2/8) >= (i+1) && readStartFile2/8 <= (int32_t)i ) {
+								bool OutOfRange = ((readFile1/8) >= (i+1) && readStartFile1/8 <= (int32_t)i);
 								bool identic    = (data1.data_64[i] != data2.data_64[i]);
 								printElement((uint64_t)data2.data_64[i], myType, mySize, identic, OutOfRange);
 							} else {
@@ -509,7 +576,31 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t CurentFilePosit
 				i++;
 			}
 		}
-		printf(COLOR_NORMAL" |\n");
+		
+		
+		lineNumber = positionStartDisplayFile2;
+		if (lineNumber+NB_DATA_PER_LINE*4-1 >= 0) {
+			switch(mySize)
+			{
+				case SHOW_TYPE_SIZE_8:
+					printf(COLOR_BOLD_MAGENTA" | %7d ", (int)(lineNumber));
+					break;
+				case SHOW_TYPE_SIZE_16:
+					printf(COLOR_BOLD_MAGENTA" | %7d ", (int)(lineNumber/2));
+					break;
+				case SHOW_TYPE_SIZE_32:
+					printf(COLOR_BOLD_MAGENTA" | %7d ", (int)(lineNumber/4));
+					break;
+				case SHOW_TYPE_SIZE_64:
+					printf(COLOR_BOLD_MAGENTA" | %7d ", (int)(lineNumber/8));
+					break;
+				default:
+					break;
+			}
+			printf(COLOR_BOLD_YELLOW"| 0x%08x"COLOR_NORMAL " |\n", (unsigned int)lineNumber);
+		} else {
+			printf(COLOR_BOLD_MAGENTA" |         "COLOR_BOLD_YELLOW"|           "COLOR_NORMAL " |\n");
+		}
 	}
 }
 
@@ -526,14 +617,9 @@ void * threadDisplay (void * p_data)
 	while (1)
 	{
 		if (getParamModification()) {
-			uint32_t CurentFilePosition = getOfsetFile();
-			if (filePointer[0] != NULL) {
-				fseek ( filePointer[0] , CurentFilePosition , SEEK_SET );
-			}
-			if (NULL != filePointer[1]) {
-				fseek ( filePointer[1] , CurentFilePosition , SEEK_SET );
-			}
-			compareFile(filePointer[0],filePointer[1], CurentFilePosition);
+			uint32_t curentFilePosition = getOfsetFile();
+			uint32_t curentFilePadding  = getPaddingOffsetFile();
+			compareFile(filePointer[0],filePointer[1], curentFilePosition, curentFilePadding);
 		} else {
 			usleep(10000);
 		}

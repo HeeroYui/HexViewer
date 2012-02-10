@@ -82,7 +82,7 @@ typedef   signed long long int          int64_t;
 
 
 #define NB_DATA_PER_LINE    (4)
-#define NB_MAX_LINE         (50)
+#define NB_MAX_LINE         (45)
 
 
 

@@ -35,12 +35,15 @@ void upDownOfsetFile(int32_t offset);
 uint32_t getOfsetFile(void);
 
 bool getParamModification();
-
+void needRedraw(void);
 void nextType(void);
 showType_te getType(void);
 
 void nextTypeSize(void);
 showTypeSize_te getTypeSize(void);
 
+void displayPaddingOffset(int32_t size);
+void displayPaddingOffsetClear(void);
+int32_t getPaddingOffsetFile(void);
 #endif
 
