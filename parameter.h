@@ -45,5 +45,15 @@ showTypeSize_te getTypeSize(void);
 void displayPaddingOffset(int32_t size);
 void displayPaddingOffsetClear(void);
 int32_t getPaddingOffsetFile(void);
+
+
+#define NB_HEARDER_RAW             (8)
+
+void UpdateNumberOfRawAndColomn(void);
+int32_t GetNumberOfRaw(void);
+int32_t GetNumberOfColomn(void);
+
+void CleanDisplay(void);
+
 #endif
 

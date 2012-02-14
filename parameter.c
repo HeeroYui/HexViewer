@@ -24,6 +24,8 @@
  */
 
 #include "parameter.h"
+#include <sys/ioctl.h>
+#include <stdio.h>
 // Parameter  Local Value : 
 
 static uint32_t fileOfset = 0;
@@ -36,6 +38,25 @@ static showTypeSize_te curentTypeSize = SHOW_TYPE_SIZE_8;
 
 
 extern uint32_t filesize[2];
+
+void CleanDisplay(void)
+{
+	//system("clear");
+	UpdateNumberOfRawAndColomn();
+	printf(GO_TOP);
+	for (int32_t iii=0; iii< GetNumberOfRaw(); iii++) {
+		for (int32_t jjj=0; jjj < GetNumberOfColomn()-1; jjj++) {
+			printf(" ");
+		}
+		if (iii< GetNumberOfRaw()-1) {
+			printf("\n");
+		}
+	}
+	printf(GO_TOP);
+}
+
+
+
 
 void setOfsetFile(int32_t offset)
 {
@@ -118,7 +139,7 @@ void nextType(void)
 			curentType = SHOW_TYPE_HEX;
 			break;
 	}
-	system("clear");
+	CleanDisplay();
 	parmamModifier = true;
 }
 
@@ -150,7 +171,7 @@ void nextTypeSize(void)
 			curentTypeSize = SHOW_TYPE_SIZE_8;
 			break;
 	}
-	system("clear");
+	CleanDisplay();
 	parmamModifier = true;
 }
 
@@ -160,5 +181,25 @@ showTypeSize_te getTypeSize(void)
 }
 
 
+int32_t nbRaw = 20;
+int32_t nbColomn = 70;
 
+void UpdateNumberOfRawAndColomn(void)
+{
+	struct winsize w;
+	ioctl(0, TIOCGWINSZ, &w);
+	nbRaw = w.ws_row;
+	nbColomn = w.ws_col;
+}
+
+
+int32_t GetNumberOfRaw(void)
+{
+	return nbRaw;
+}
+
+int32_t GetNumberOfColomn(void)
+{
+	return nbColomn;
+}
 

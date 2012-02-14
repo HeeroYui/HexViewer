@@ -75,14 +75,17 @@ typedef   signed long long int          int64_t;
 // Return to the normal color setings
 #define COLOR_NORMAL         "\e[0m"
 
+#define MOUSE_REPORTING_ENABLE    "\e[?9h"
+#define MOUSE_REPORTING_DISABLE   "\e[?9l"
 
+#define CURSOR_DISPLAY_DISABLE    "\e[?25l"
+#define CURSOR_DISPLAY_ENABLE     "\e[?12l\e[?25h"
 
 //go to the Top of bash
 #define GO_TOP         "\e[0;0f"
 
 
 #define NB_DATA_PER_LINE    (4)
-#define NB_MAX_LINE         (45)
 
 
 

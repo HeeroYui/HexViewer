@@ -84,7 +84,10 @@ void showConfiguration(void)
 	showType_te myType = getType();
 	showTypeSize_te mySize = getTypeSize();
 	
+	// TODO : Redraw periodicly
+	//CleanDisplay();
 	printf(GO_TOP);
+	
 	printf(COLOR_BOLD_GREEN);
 	drawLine();
 	printf(COLOR_GREEN);
@@ -333,7 +336,7 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 	// Display the main show
 	printf(COLOR_BOLD_YELLOW);
 	drawLine();
-	for (j=0; j < NB_MAX_LINE; j++) {
+	for (j=0; j < (GetNumberOfRaw()-NB_HEARDER_RAW); j++) {
 		uint32_t readFile1 = 0;
 		uint32_t readFile2 = 0;
 		int32_t lineNumber = 0;

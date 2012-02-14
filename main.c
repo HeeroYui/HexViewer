@@ -30,6 +30,7 @@
 
 
 
+
 bool  filePresent[2] = {false, false};
 FILE *filePointer[2] = {NULL, NULL};
 uint32_t filesize[2] = {0, 0};
@@ -138,14 +139,14 @@ void OpenFiles(void) {
 		// Open file 1
 		filePointer[0] = fopen(fileName[0], "rb");
 		if ( NULL == filePointer[0]) {
-			printf("Can not Open [File_1] = %s\n", fileName[0]);
+			//printf("Can not Open [File_1] = %s\n", fileName[0]);
 		}
 	}
 	if (true == filePresent[1]) {
 		// open File 2
 		filePointer[1] = fopen(fileName[1], "rb");
 		if ( NULL == filePointer[1]) {
-			printf("Can not Open [File_2] = %s\n", fileName[1]);
+			//printf("Can not Open [File_2] = %s\n", fileName[1]);
 		}
 	}
 	UpdateFilesSize();
@@ -171,6 +172,8 @@ int main (int argc, char**argv)
 	strcpy(fileName[0], "No-File");
 	strcpy(fileName[1], "No-File");
 	
+	UpdateNumberOfRawAndColomn();
+	
 	// check error
 	if (3 < argc || argc < 2) {
 		printf("You set more than 3 argument at the commande line\n");
@@ -194,10 +197,14 @@ int main (int argc, char**argv)
 	system("stty -icanon");
 	// supression de l'écho des caractères
 	system("stty -echo");
-	
+	// enable mouse event ...
+	printf(MOUSE_REPORTING_ENABLE);
+	// hide cursor ...
+	printf(CURSOR_DISPLAY_DISABLE);
 	system("clear");
-	
-	
+	CleanDisplay();
+
+
 	int ret = 0;
 	pthread_t HangleThreadDisplay;
 
@@ -206,9 +213,45 @@ int main (int argc, char**argv)
 	{
 		while (1)
 		{
-			uint32_t inputValue;
-			inputValue = getc (stdin);
-			//printf("\n get data : 0x%08x ..... : \n", (unsigned int)inputValue);
+			int32_t inputValue;
+			inputValue = getc(stdin);
+			if (inputValue == 0x1b) {
+				// mose event : 
+				int32_t val2 = getc(stdin);
+				int32_t val3 = getc(stdin);
+				int32_t val4 = getc(stdin);
+				int32_t val5 = getc(stdin);
+				int32_t val6 = getc(stdin);
+				int32_t bt=0;
+				switch (val4) {
+					case 97:
+						bt = 4;
+						break;
+					case 96:
+						bt = 5;
+						break;
+					case 32:
+						bt = 1;
+						break;
+					case 33:
+						bt = 3;
+						break;
+				}
+				//printf("\n mouse event : %d, %d, %d, %d=%d x=%d y=%d\n", inputValue, val2, val3, val4, bt, val5-33, val6-33);
+				(void)val2;
+				(void)val3;
+				(void)val4;
+				(void)val5;
+				(void)val6;
+				if (bt == 4) {
+					upDownOfsetFile(5);
+				} else if (bt == 5) {
+					upDownOfsetFile(-5);
+				}
+				inputValue = 0;
+			} else {
+				//printf("\n get data : 0x%08x ..... : \n", (unsigned int)inputValue);
+			}
 			switch(inputValue)
 			{
 				case 'q':
@@ -233,9 +276,9 @@ int main (int argc, char**argv)
 							} else if ( inputValue == 0x42) {
 								upDownOfsetFile(5);
 							} else if ( inputValue == 0x43) {
-								upDownOfsetFile(NB_MAX_LINE);
+								upDownOfsetFile((GetNumberOfRaw()-NB_HEARDER_RAW));
 							} else if ( inputValue == 0x44) {
-								upDownOfsetFile(-NB_MAX_LINE);
+								upDownOfsetFile(-(GetNumberOfRaw()-NB_HEARDER_RAW));
 							}
 						}
 					}
@@ -282,6 +325,7 @@ int main (int argc, char**argv)
 				case 'r':
 				case 'R':
 					CloseFiles();
+					//UpdateNumberOfRawAndColomn();
 					OpenFiles();
 					needRedraw();
 					break;
@@ -312,6 +356,10 @@ int main (int argc, char**argv)
 exit_programme : 
 	CloseFiles();
 	
+	// disable mouse event ...
+	printf(MOUSE_REPORTING_DISABLE);
+	// Back cursor ON ...
+	printf(CURSOR_DISPLAY_ENABLE);
 	// remettre la lecture des données canonique
 	system("stty icanon");
 	// repositionnement de l'écho des caractères
