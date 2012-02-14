@@ -325,7 +325,8 @@ int main (int argc, char**argv)
 				case 'r':
 				case 'R':
 					CloseFiles();
-					//UpdateNumberOfRawAndColomn();
+					UpdateNumberOfRawAndColomn();
+					CleanDisplay();
 					OpenFiles();
 					needRedraw();
 					break;

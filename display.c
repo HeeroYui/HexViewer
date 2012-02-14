@@ -161,7 +161,7 @@ void printNoElement(showType_te localType, showTypeSize_te localSize)
 				default:
 					break;
 			}
-			break;
+			break;printf(GO_TOP);
 		case SHOW_TYPE_DECIMAL_UNSIGNED:
 		case SHOW_TYPE_DECIMAL_SIGNED:
 			switch(localSize)
@@ -336,7 +336,7 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 	// Display the main show
 	printf(COLOR_BOLD_YELLOW);
 	drawLine();
-	for (j=0; j < (GetNumberOfRaw()-NB_HEARDER_RAW); j++) {
+	for (j=0; j < (uint32_t)(GetNumberOfRaw()-NB_HEARDER_RAW); j++) {
 		uint32_t readFile1 = 0;
 		uint32_t readFile2 = 0;
 		int32_t lineNumber = 0;
