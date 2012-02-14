@@ -215,43 +215,6 @@ int main (int argc, char**argv)
 		{
 			int32_t inputValue;
 			inputValue = getc(stdin);
-			if (inputValue == 0x1b) {
-				// mose event : 
-				int32_t val2 = getc(stdin);
-				int32_t val3 = getc(stdin);
-				int32_t val4 = getc(stdin);
-				int32_t val5 = getc(stdin);
-				int32_t val6 = getc(stdin);
-				int32_t bt=0;
-				switch (val4) {
-					case 97:
-						bt = 4;
-						break;
-					case 96:
-						bt = 5;
-						break;
-					case 32:
-						bt = 1;
-						break;
-					case 33:
-						bt = 3;
-						break;
-				}
-				//printf("\n mouse event : %d, %d, %d, %d=%d x=%d y=%d\n", inputValue, val2, val3, val4, bt, val5-33, val6-33);
-				(void)val2;
-				(void)val3;
-				(void)val4;
-				(void)val5;
-				(void)val6;
-				if (bt == 4) {
-					upDownOfsetFile(5);
-				} else if (bt == 5) {
-					upDownOfsetFile(-5);
-				}
-				inputValue = 0;
-			} else {
-				//printf("\n get data : 0x%08x ..... : \n", (unsigned int)inputValue);
-			}
 			switch(inputValue)
 			{
 				case 'q':
@@ -262,26 +225,61 @@ int main (int argc, char**argv)
 				case '\e':
 					inputValue = getc (stdin);
 					//printf("\n get data : 0x%08x ..... : \n", (unsigned int)inputValue);
-					if (inputValue == 0x5B)
+					// [ == 0x5B
+					if (inputValue == '[')
 					{
 						inputValue = getc (stdin);
-						//printf("\n get data : 0x%08x ..... : \n", (unsigned int)inputValue);
-						if (    inputValue == 0x41
-						     || inputValue == 0x42
-						     || inputValue == 0x43
-						     || inputValue == 0x44)
+						char charValue = inputValue;
+						// printf("\n get data : 0x%08x ..... : \\e[%c\n", (unsigned int)inputValue, charValue);
+						if (    charValue == 'A' //0x41 ==> UP
+						     || charValue == 'B' //0x42 ==> DOWN
+						     || charValue == 'C' //0x43 ==> RIGHT
+						     || charValue == 'D' //0x44 ==> LEFT
+						   )
 						{
-							if (inputValue == 0x41) {
+							//printf("\n get data :\\e[%c ==> MoveKey \n", charValue);
+							if (charValue == 'A') {
 								upDownOfsetFile(-5);
-							} else if ( inputValue == 0x42) {
+							} else if ( charValue == 'B') {
 								upDownOfsetFile(5);
-							} else if ( inputValue == 0x43) {
+							} else if ( charValue == 'C') {
 								upDownOfsetFile((GetNumberOfRaw()-NB_HEARDER_RAW));
-							} else if ( inputValue == 0x44) {
+							} else if ( charValue == 'D') {
 								upDownOfsetFile(-(GetNumberOfRaw()-NB_HEARDER_RAW));
+							}
+						} else if (charValue == 'M' ) { //0x4d ==> mouse
+							//printf("\n get data :\\e[%c ==> Mouse \n", charValue);
+							int32_t button = getc(stdin);
+							int32_t xPos = getc(stdin);
+							xPos -= 0x20;
+							int32_t yPos = getc(stdin);
+							yPos -= 0x20;
+							
+							int32_t bt=0;
+							switch (button) {
+								case 97:
+									bt = 4;
+									break;
+								case 96:
+									bt = 5;
+									break;
+								case 32:
+									bt = 1;
+									break;
+								case 33:
+									bt = 3;
+									break;
+							}
+							//printf("     bt=%#x=%d \n", button, bt);
+							//printf("     x=%d y=%d\n", xPos, yPos);
+							if (bt == 4) {
+								upDownOfsetFile(5);
+							} else if (bt == 5) {
+								upDownOfsetFile(-5);
 							}
 						}
 					}
+					
 					break;
 				// change the type of interpretation the file
 				case 't':
