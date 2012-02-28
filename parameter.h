@@ -1,26 +1,19 @@
 /**
  *******************************************************************************
  * @file parameter.h
- * @brief Editeur De N'ours :
+ * @brief Parameters area (header)
  * @author Edouard DUPIN
  * @date 05/02/2011
  * @par Project
- * Edn tool : hexViewer
+ * hexViewer
  *
- * @version $Id$
- * 
  * @par Copyright
  * Copyright 2010 Edouard DUPIN, all right reserved
  *
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
+ * ANY WARRANTY.
+ *
+ * Licence : GNU Lesser General Public License (LGPL) v3.0
  *
  *******************************************************************************
  */

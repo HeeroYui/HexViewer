@@ -12,21 +12,12 @@
 # Concu Pour le projet hexViwer                                                                                  #
 #                                                                                                                #
 ##################################################################################################################
-export F_GRAS=[1m
-export F_INVERSER=[7m
-export F_SOUSLIGNER=[4m
-export F_NORMALE=[m
-export F_NOIR=[31m
-export F_ROUGE=[31m
-export F_VERT=[32m
-export F_MARRON=[33m
-export F_BLUE=[34m
-export F_VIOLET=[35m
-export F_CYAN=[36m
-export F_GRIS=[37m
-export CADRE_HAUT_BAS='	$(F_INVERSER)                                                                    $(F_NORMALE)'
-export CADRE_COTERS='	$(F_INVERSER)  $(F_NORMALE)								  $(F_INVERSER)  $(F_NORMALE)'
 
+VERSION_TAG_SHORT=$(shell git describe --tags --abbrev=0)
+#$(info $(VERSION_TAG_SHORT))
+
+VERSION_BUILD_TIME=$(shell date)
+#$(info $(VERSION_BUILD_TIME))
 
 CFLAGS= -g -Wall -D_REENTRANT
 
@@ -37,38 +28,22 @@ LIB= -lpthread -lm
 CC= g++ $(CFLAGS)
 LD= g++
 
-# Liste des fichiers
+# List of Sources
 SRC=main.c         \
     display.c      \
     parameter.c
 
-# Liste des objets
+# List of Objects
 OBJ= $(SRC:.c=.o)
 
-# Liste des dépendances
+# List of dependances
 DEP= $(SRC:.c=.d)
 
+PROG_NAME=hexViewer
 
-#
-BIN=hexViewer 
-    
 .PHONY: all
-all: encadrer $(BIN)
+all: $(PROG_NAME)
 
-
-encadrer:
-ifneq ($(COLOR),normal)
-	@echo $(CADRE_HAUT_BAS)
-	@echo $(CADRE_COTERS)
-	@echo '           DEBUT DE COMPILATION DU PROGRAMME :'$(CADRE_COTERS)
-	@echo '                    $(F_VIOLET)$(BIN)$(F_NORMALE) '$(CADRE_COTERS)
-	@echo $(CADRE_COTERS)
-	@echo '          $(F_GRIS) Heero Yui Makefile                                 29-01-2010$(F_NORMALE)'$(CADRE_COTERS)
-	@echo $(CADRE_HAUT_BAS)
-endif
-
-   
-#
 %.o: %.c
 	@echo $(F_VERT)"     (.o)  $<"$(F_NORMALE)
 	@$(CC) -o $@ -c $<
@@ -76,18 +51,48 @@ endif
 %.d: %.c
 	@echo $(F_BLUE)"     (.d)  $<"$(F_NORMALE)
 	@$(CC) -MM -MD -o $@ $< 
-    
-    
+
 .PHONY: clean
 clean:
-	rm -f $(BIN) $(OBJ) $(DEP) *.i *.s *.bck
+	rm -f $(PROG_NAME) $(OBJ) $(DEP) *.i *.s *.bck
 
-$(BIN):$(OBJ)
+$(PROG_NAME):$(OBJ)
 	@echo $(F_ROUGE)"     (bin) $@"$(F_NORMALE)
 	@$(LD) -o $@ $^ $(LIB)
-	
-	
-	
+
 # inclusion des dependances
 -include $(DEP)
+
+.PHONY: package
+# http://alp.developpez.com/tutoriels/debian/creer-paquet/
+package: all
+	@echo 'Create packages ...'
+	@mkdir -p package/$(PROG_NAME)/DEBIAN/
+	@mkdir -p package/$(PROG_NAME)/usr/bin/
+	@mkdir -p package/$(PROG_NAME)/usr/share/doc/
+	@mkdir -p package/$(PROG_NAME)/usr/share/edn/
+	# Create the control file
+	@echo "Package: "$(PROG_NAME) > package/$(PROG_NAME)/DEBIAN/control
+	@echo "Version: "$(VERSION_TAG_SHORT) >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "Section: Development,Editors" >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "Priority: optional" >>package/$(PROG_NAME)/DEBIAN/control
+	@echo "Architecture: all" >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "Depends: bash" >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "Maintainer: Mr DUPIN Edouard <yui.heero@gmail.com>" >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "Description: Binary comparator for shell console" >> package/$(PROG_NAME)/DEBIAN/control
+	@echo "" >> package/$(PROG_NAME)/DEBIAN/control
+	# Create the PostRm
+	@#echo "#!/bin/bash" > package/$(PROG_NAME)/DEBIAN/postrm
+	@#echo "rm ~/."$(PROG_NAME) >> package/$(PROG_NAME)/DEBIAN/postrm
+	@#echo "" >> package/$(PROG_NAME)/DEBIAN/postrm
+	# Enable Execution in script
+	@#chmod 755 package/$(PROG_NAME)/DEBIAN/post*
+	@#chmod 755 package/$(PROG_NAME)/DEBIAN/pre*
+	# copy licence and information : 
+	@cp README package/$(PROG_NAME)/usr/share/doc/README
+	@cp licence.txt package/$(PROG_NAME)/usr/share/doc/copyright
+	@echo "First generation in progress" >> package/$(PROG_NAME)/usr/share/doc/changelog
+	@#cp -vf $(PROG_NAME) package/$(PROG_NAME)/usr/bin/
+	@#cp -vf data/*.xml package/$(PROG_NAME)/usr/share/edn/
+	@cd package; dpkg-deb --build $(PROG_NAME)
 

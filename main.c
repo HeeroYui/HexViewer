@@ -1,26 +1,19 @@
 /**
  *******************************************************************************
  * @file main.c
- * @brief Editeur De N'ours :
+ * @brief Main function (sources)
  * @author Edouard DUPIN
  * @date 05/02/2011
  * @par Project
- * Edn tool : hexViewer
+ * hexViewer
  *
- * @version $Id$
- * 
  * @par Copyright
  * Copyright 2010 Edouard DUPIN, all right reserved
  *
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * for more details.
+ * ANY WARRANTY.
+ *
+ * Licence : GNU Lesser General Public License (LGPL) v3.0
  *
  *******************************************************************************
  */
@@ -46,13 +39,13 @@ void usage(void)
 	printf("\t\t[a]     Go to the start of the files\n");
 	printf("\t\t[z]     Go to the end of the files (the first push is the File 1, the second push is the file 2) \n");
 	printf("\t\t[q]     Quit the curent program\n");
-	printf("\t\t[s]     Change the view of the propram of the size of interpretation (8 bits, 16 bits, 32 bits)\n");
+	printf("\t\t[s]     Change the view of the propram of the size of interpretation (8/16/32/64 bits)\n");
 	printf("\t\t[t]     Change the interpretation of Data (hexedecimal, Signed Decimal, Unigned Decimal)\n");
 	printf("\t\t[f]     Find the first Error when comparing the two files\n");
-	printf("\t\t[UP]    Go up 5 line in the view\n");
-	printf("\t\t[DOWN]  Go down 5 line in the view\n");
-	printf("\t\t[LEFT]  Go up 50 line in the view (one screen)\n");
-	printf("\t\t[RIGHT] Go down 50 line in the view (one screen)\n");
+	printf("\t\t[UP]    Go up (5 lines)\n");
+	printf("\t\t[DOWN]  Go down (5 lines)\n");
+	printf("\t\t[LEFT]  Go up (one screen)\n");
+	printf("\t\t[RIGHT] Go down (one screen)\n");
 	printf("\t\tAdd padding : \n");
 	printf("\t\t\t[o]   Add  1 Byte  padding at the left file\n");
 	printf("\t\t\t[O]   Add 16 Bytes padding at the left file\n");
@@ -60,31 +53,9 @@ void usage(void)
 	printf("\t\t\t[P]   Add 16 Bytes padding at the right file\n");
 	printf("\t\t\t[m]   reset padding\n");
 	printf("\t\n");
-	/*
-	printf("\tTODO : \n");
-	printf("\t\t- The print of 128 bytes\n");
-	printf("\t\t- The print in Octal\n");
-	printf("\t\t- The print in Binary\n");
-	printf("\t\t- The Modification of the file\n");
-	printf("\t\t- The Saving of the file\n");
-	printf("\t\t- The information that one of the files has been update\n");
-	printf("\t\t- To reload the two files                                     ==> [U]\n");
-	printf("\t\t- The windows scroling with the mouse\n");
-	printf("\t\t- The selection with the mouse\n");
-	printf("\t\t- The display on char view\n");
-	printf("\t\t- The scroling Bar on the right\n");
-	printf("\t\t- Add to the croling bar the differences in the two files\n");
-	printf("\t\t- The research of a sequency in the two files                 ==> [R]\n");
-	printf("\t\t- The jump to an offset directly                              ==> [J] \n");
-	*/
-	/*printf("\t\t- \n");*/
+	printf("\tCopyright: 2010 Edouard DUPIN, all right reserved\n");
+	printf("\tLicense: GNU Lesser General Public License (LGPL) v3.0\n");
 }
-
-
-
-
-
-
 
 
 
