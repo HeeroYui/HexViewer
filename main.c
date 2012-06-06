@@ -42,6 +42,7 @@ void usage(void)
 	printf("\t\t[s]     Change the view of the propram of the size of interpretation (8/16/32/64 bits)\n");
 	printf("\t\t[t]     Change the interpretation of Data (hexedecimal, Signed Decimal, Unigned Decimal)\n");
 	printf("\t\t[f]     Find the first Error when comparing the two files\n");
+	printf("\t\t[c]     Calibrate the delta between the 2 file (fist element !=0)\n");
 	printf("\t\t[UP]    Go up (5 lines)\n");
 	printf("\t\t[DOWN]  Go down (5 lines)\n");
 	printf("\t\t[LEFT]  Go up (one screen)\n");
@@ -68,11 +69,21 @@ int32_t findFirstDiff(void)
 	    || NULL == filePointer[1] ) {
 		return 0;
 	}
+	int32_t paddingFile = getPaddingOffsetFile();
+	int32_t pad1 = 0;
+	int32_t pad2 = 0;
+	if (paddingFile>0) {
+		pad1 = paddingFile;
+		pad2 = 0;
+	} else {
+		pad1 = 0;
+		pad2 = -1*paddingFile;
+	}
 	if(NULL != filePointer[0]) {
-		fseek ( filePointer[0] , 0 , SEEK_SET );
+		fseek ( filePointer[0] , pad1 , SEEK_SET );
 	}
 	if(NULL != filePointer[1]) {
-		fseek ( filePointer[1] , 0 , SEEK_SET );
+		fseek ( filePointer[1] , pad2 , SEEK_SET );
 	}
 	while (  fread(&data1, sizeof(uint8_t), 1, filePointer[0])  == 1
 	         && fread(&data2, sizeof(uint8_t), 1, filePointer[1])  == 1)
@@ -84,6 +95,51 @@ int32_t findFirstDiff(void)
 	}
 	return offset;
 }
+
+void AutoSetPadding(void)
+{
+	displayPaddingOffset(0);
+	if(    NULL == filePointer[0]
+	    || NULL == filePointer[1] ) {
+		return;
+	}
+	
+	if(NULL != filePointer[0]) {
+		fseek ( filePointer[0] , 0 , SEEK_SET );
+	}
+	int32_t offset1 = 0;
+	char data;
+	while(fread(&data, sizeof(uint8_t), 1, filePointer[0]) == 1)
+	{
+		if (data != 0) {
+			break;
+		}
+		offset1 ++;
+	}
+	if(NULL != filePointer[1]) {
+		fseek ( filePointer[1] , 0 , SEEK_SET );
+	}
+	int32_t offset2 = 0;
+	while(fread(&data, sizeof(uint8_t), 1, filePointer[1]) == 1)
+	{
+		if (data != 0) {
+			break;
+		}
+		offset2 ++;
+	}
+	if (offset1 == offset2) {
+		return;
+	}
+	if (offset1 == 0) {
+		return;
+	}
+	if (0 == offset2) {
+		return;
+	}
+	displayPaddingOffset(offset1 - offset2);
+}
+
+
 
 void UpdateFilesSize(void)
 {
@@ -316,6 +372,10 @@ int main (int argc, char**argv)
 				case 'm':
 				case 'M':
 					displayPaddingOffsetClear();
+					break;
+				case 'c':
+				case 'C':
+					AutoSetPadding();
 					break;
 			}
 		}

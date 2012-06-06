@@ -91,8 +91,8 @@ package: all
 	# copy licence and information : 
 	@cp README package/$(PROG_NAME)/usr/share/doc/README
 	@cp licence.txt package/$(PROG_NAME)/usr/share/doc/copyright
-	@echo "First generation in progress" >> package/$(PROG_NAME)/usr/share/doc/changelog
-	@#cp -vf $(PROG_NAME) package/$(PROG_NAME)/usr/bin/
+	@echo "First generation in progress" > package/$(PROG_NAME)/usr/share/doc/changelog
+	@cp -vf $(PROG_NAME) package/$(PROG_NAME)/usr/bin/
 	@#cp -vf data/*.xml package/$(PROG_NAME)/usr/share/edn/
 	@cd package; dpkg-deb --build $(PROG_NAME)
 
