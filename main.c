@@ -31,7 +31,9 @@ char fileName[2][2096] = {"",""};
 
 void usage(void)
 {
-	printf("usage : hexViwer [file_1] [file_2]\n");
+	printf("usage : hexViwer [option] [file_1] [file_2]\n");
+	printf("\t[option] : options:\n");
+	printf("\t\t[-d] : direct check of the error ...\n");
 	printf("\t[file_1] : Show the first file  only\n");
 	printf("\t[file_2] : if it was precise : Show the comparaison with the first file\n");
 	printf("\t\n");
@@ -202,24 +204,46 @@ int main (int argc, char**argv)
 	UpdateNumberOfRawAndColomn();
 	
 	// check error
-	if (3 < argc || argc < 2) {
+	if (argc < 2) {
 		printf("You set more than 3 argument at the commande line\n");
 		usage();
 		return -1;
 	}
+	bool directCheckFiles = false;
+	int basicIDParsing = 1;
+	if (0==strcmp("-d",argv[1])) {
+		basicIDParsing++;
+		directCheckFiles = true;
+	}
 	// one file
-	if (2 <= argc) {
-		strcpy(fileName[0], argv[1]);
+	if (basicIDParsing+1 <= argc) {
+		strcpy(fileName[0], argv[basicIDParsing]);
 		filePresent[0] = true;
 	}
 	// a second file
-	if (3 <= argc) {
-		strcpy(fileName[1], argv[2]);
+	if (basicIDParsing+2 <= argc) {
+		strcpy(fileName[1], argv[basicIDParsing+1]);
 		filePresent[1] = true;
 	}
 	// open the files
 	OpenFiles();
 	
+	// user requested to have the direct error ID of the file...
+	if (directCheckFiles==true) {
+		
+		int32_t idError = findFirstDiff();
+		int minSizeFile = (filesize[0]<filesize[1])?filesize[0]:filesize[1];
+		if (minSizeFile<=idError) {
+			printf(" No error : %d /(1:%d;2:%d)", idError, (int)filesize[0], (int)filesize[1]);
+			CloseFiles();
+			// 0 : no error
+			return 0;
+		} else {
+			printf(" first octet error : %d /(1:%d;2:%d)", idError, (int)filesize[0], (int)filesize[1]);
+			CloseFiles();
+			return idError;
+		}
+	}
 	// rendre la lecture des données non canonique
 	system("stty -icanon");
 	// supression de l'écho des caractères
