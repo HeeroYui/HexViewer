@@ -32,7 +32,7 @@ static showType_te curentType = SHOW_TYPE_HEX;
 static showTypeSize_te curentTypeSize = SHOW_TYPE_SIZE_8;
 
 
-extern uint32_t filesize[2];
+extern fileProperties_ts fileProp[2];
 
 void CleanDisplay(void)
 {
@@ -58,8 +58,8 @@ void setOfsetFile(int32_t offset)
 	if (0 > offset) {
 		offset = 0;
 	}
-	if(    offset > (int32_t)filesize[0]
-	    && offset > (int32_t)filesize[1]) {
+	if(    offset > (int32_t)fileProp[0].size
+	    && offset > (int32_t)fileProp[1].size) {
 		// nothing to do
 		return;
 	}
@@ -143,6 +143,12 @@ showType_te getType(void)
 	return curentType;
 }
 
+void setType(showType_te newType)
+{
+	curentType = newType;
+	parmamModifier = true;
+}
+
 void nextTypeSize(void)
 {
 	switch(curentTypeSize)
@@ -173,6 +179,11 @@ void nextTypeSize(void)
 showTypeSize_te getTypeSize(void)
 {
 	return curentTypeSize;
+}
+void setTypeSize(showTypeSize_te newType)
+{
+	curentTypeSize = newType;
+	parmamModifier = true;
 }
 
 

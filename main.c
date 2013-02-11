@@ -22,12 +22,7 @@
 #include "display.h"
 
 
-
-
-bool  filePresent[2] = {false, false};
-FILE *filePointer[2] = {NULL, NULL};
-uint32_t filesize[2] = {0, 0};
-char fileName[2][2096] = {"",""};
+fileProperties_ts fileProp[2];
 
 void usage(void)
 {
@@ -67,8 +62,8 @@ int32_t findFirstDiff(void)
 {
 	uint8_t data1, data2;
 	int32_t offset = 0;
-	if(    NULL == filePointer[0]
-	    || NULL == filePointer[1] ) {
+	if(    NULL == fileProp[0].pointer
+	    || NULL == fileProp[1].pointer ) {
 		return 0;
 	}
 	int32_t paddingFile = getPaddingOffsetFile();
@@ -81,14 +76,14 @@ int32_t findFirstDiff(void)
 		pad1 = 0;
 		pad2 = -1*paddingFile;
 	}
-	if(NULL != filePointer[0]) {
-		fseek ( filePointer[0] , pad1 , SEEK_SET );
+	if(NULL != fileProp[0].pointer) {
+		fseek ( fileProp[0].pointer , pad1+fileProp[0].fileBasicOffset , SEEK_SET );
 	}
-	if(NULL != filePointer[1]) {
-		fseek ( filePointer[1] , pad2 , SEEK_SET );
+	if(NULL != fileProp[1].pointer) {
+		fseek ( fileProp[1].pointer , pad2+fileProp[1].fileBasicOffset , SEEK_SET );
 	}
-	while (  fread(&data1, sizeof(uint8_t), 1, filePointer[0])  == 1
-	         && fread(&data2, sizeof(uint8_t), 1, filePointer[1])  == 1)
+	while (  fread(&data1, sizeof(uint8_t), 1, fileProp[0].pointer)  == 1
+	         && fread(&data2, sizeof(uint8_t), 1, fileProp[1].pointer)  == 1)
 	{
 		offset ++;
 		if (data1 != data2) {
@@ -101,28 +96,27 @@ int32_t findFirstDiff(void)
 void AutoSetPadding(void)
 {
 	displayPaddingOffset(0);
-	if(    NULL == filePointer[0]
-	    || NULL == filePointer[1] ) {
+	if(    NULL == fileProp[0].pointer
+	    || NULL == fileProp[1].pointer ) {
 		return;
 	}
 	
-	if(NULL != filePointer[0]) {
-		fseek ( filePointer[0] , 0 , SEEK_SET );
+	if(NULL != fileProp[0].pointer) {
+		fseek ( fileProp[0].pointer , fileProp[0].fileBasicOffset , SEEK_SET );
 	}
 	int32_t offset1 = 0;
 	char data;
-	while(fread(&data, sizeof(uint8_t), 1, filePointer[0]) == 1)
-	{
+	while(fread(&data, sizeof(uint8_t), 1, fileProp[0].pointer) == 1) {
 		if (data != 0) {
 			break;
 		}
 		offset1 ++;
 	}
-	if(NULL != filePointer[1]) {
-		fseek ( filePointer[1] , 0 , SEEK_SET );
+	if(NULL != fileProp[1].pointer) {
+		fseek ( fileProp[1].pointer , fileProp[1].fileBasicOffset , SEEK_SET );
 	}
 	int32_t offset2 = 0;
-	while(fread(&data, sizeof(uint8_t), 1, filePointer[1]) == 1)
+	while(fread(&data, sizeof(uint8_t), 1, fileProp[1].pointer) == 1)
 	{
 		if (data != 0) {
 			break;
@@ -132,12 +126,13 @@ void AutoSetPadding(void)
 	if (offset1 == offset2) {
 		return;
 	}
-	if (offset1 == 0) {
+	if (0 == offset1) {
 		return;
 	}
 	if (0 == offset2) {
 		return;
 	}
+	
 	displayPaddingOffset(offset1 - offset2);
 }
 
@@ -145,50 +140,166 @@ void AutoSetPadding(void)
 
 void UpdateFilesSize(void)
 {
-	// get size file 1
-	if ( NULL != filePointer[0]) {
-		fseek ( filePointer[0] , 0 , SEEK_END );
-		filesize[0] = ftell (filePointer[0]);
-		fseek ( filePointer[0] , 0 , SEEK_SET );
-	}
-	// get size file 2
-	if ( NULL != filePointer[1]) {
-		fseek ( filePointer[1] , 0 , SEEK_END );
-		filesize[1] = ftell (filePointer[1]);
-		fseek ( filePointer[1] , 0 , SEEK_SET );
+	// get size for 2 files
+	int32_t iii=0;
+	for (iii=0; iii<2; iii++) {
+		if ( NULL != fileProp[iii].pointer) {
+			fseek ( fileProp[iii].pointer , 0 , SEEK_END );
+			fileProp[iii].size = ftell (fileProp[iii].pointer) - fileProp[iii].fileBasicOffset;
+			fseek ( fileProp[iii].pointer , 0 , SEEK_SET );
+		}
 	}
 }
 
-void OpenFiles(void) {
-	filePointer[0] = NULL;
-	filePointer[1] = NULL;
-	filesize[0] = 0;
-	filesize[1] = 0;
-	if (true == filePresent[0]) {
-		// Open file 1
-		filePointer[0] = fopen(fileName[0], "rb");
-		if ( NULL == filePointer[0]) {
-			//printf("Can not Open [File_1] = %s\n", fileName[0]);
-		}
+
+void ResetProperties(void)
+{
+	int32_t iii=0;
+	for (iii=0; iii<2; iii++) {
+		fileProp[iii].availlable = false;
+		fileProp[iii].pointer = NULL;
+		fileProp[iii].size = 0;
+		strcpy(fileProp[iii].name, "No-File");
+		fileProp[iii].fileBasicOffset = 0;
+		fileProp[iii].type = SHOW_TYPE_UNKNOW;
+		fileProp[iii].typeSize = SHOW_TYPE_SIZE_UNKNOW;
+		fileProp[iii].slotSize = 0;
+		fileProp[iii].delta = 0;
 	}
-	if (true == filePresent[1]) {
-		// open File 2
-		filePointer[1] = fopen(fileName[1], "rb");
-		if ( NULL == filePointer[1]) {
-			//printf("Can not Open [File_2] = %s\n", fileName[1]);
+}
+
+
+void OpenFiles(void)
+{
+	int32_t iii=0;
+	for (iii=0; iii<2; iii++) {
+		if (true == fileProp[iii].availlable) {
+			// Open file 1
+			fileProp[iii].pointer = fopen(fileProp[iii].name, "rb");
+			if ( NULL == fileProp[iii].pointer) {
+				//printf("Can not Open [File_1] = %s\n", fileName[0]);
+			}
 		}
+		if (fileProp[iii].pointer==NULL) {
+			continue;
+		}
+		// check if file has specifi header : 
+		char dataheader[128];
+		if(16 == fread(&dataheader, sizeof(uint8_t), 16, fileProp[iii].pointer)) {
+			// parse header
+			if(    dataheader[0]=='#'
+			    && dataheader[1]=='M'
+			    && dataheader[2]=='E'
+			    && dataheader[3]=='T') {
+				
+				//    ==> "#MET %c %s %04d "
+				// type unused ...
+				if(    dataheader[5] == 'I'
+				    || dataheader[5] == 'F'
+				    || dataheader[5] == 'D') {
+					fileProp[iii].type = SHOW_TYPE_DECIMAL_SIGNED;
+				} else if (dataheader[5] == 'U') {
+					fileProp[iii].type = SHOW_TYPE_DECIMAL_UNSIGNED;
+				} else if (dataheader[5] == 'U') {
+					fileProp[iii].type = SHOW_TYPE_HEX;
+				} else {
+					printf("Error while parsing the header ... \n");
+					fileProp[iii].type = SHOW_TYPE_UNKNOW;
+				}
+				if (strncmp(&dataheader[6], "08", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_8;
+				} else if (strncmp(&dataheader[6], "16", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_16;
+				} else if (strncmp(&dataheader[6], "32", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_32;
+				} else if (strncmp(&dataheader[6], "64", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_64;
+				} else if (strncmp(&dataheader[6], "28", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_128;
+				} else if (strncmp(&dataheader[6], "LO", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_FLOAT;
+				} else if (strncmp(&dataheader[6], "OU", 2)==0) {
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_DOUBLE;
+				} else {
+					printf("Error while parsing the header ... \n");
+					fileProp[iii].typeSize = SHOW_TYPE_SIZE_UNKNOW;
+				}
+				char tmpVal[5];
+				tmpVal[0] = dataheader[8];
+				tmpVal[1] = dataheader[9];
+				tmpVal[2] = dataheader[10];
+				tmpVal[3] = dataheader[11];
+				tmpVal[4] = '\0';
+				sscanf(tmpVal, "%04d", &fileProp[iii].slotSize);
+				
+				sscanf(&dataheader[12], "%04d", &fileProp[iii].delta);
+				//printf("slot size [%d]=%d\n", iii, fileProp[iii].slotSize);
+				// ofset of the header : 
+				fileProp[iii].fileBasicOffset = 16;
+			}
+		} // else : no header present ==> raw file
+		fseek ( fileProp[iii].pointer , fileProp[iii].fileBasicOffset , SEEK_SET );
 	}
+	// check internal properties : 
+	if (fileProp[0].fileBasicOffset!=0 && fileProp[1].fileBasicOffset!=0) {
+		if (fileProp[0].typeSize == fileProp[1].typeSize) {
+			setTypeSize(fileProp[0].typeSize);
+		} else {
+			printf("Error The 2 files has not the same header properties header ... \n");
+		}
+		if (fileProp[0].type == fileProp[1].type) {
+			setType(fileProp[0].type);
+		} else {
+			printf("Error The 2 files has not the same header properties header ... \n");
+		}
+	} else if (fileProp[0].fileBasicOffset!=0) {
+		setTypeSize(fileProp[0].typeSize);
+		setType(fileProp[0].type);
+	} else if (fileProp[1].fileBasicOffset!=0) {
+		setTypeSize(fileProp[1].typeSize);
+		setType(fileProp[1].type);
+	}
+	int32_t sizeElement=1;
+	showTypeSize_te tmpType = getTypeSize();
+	switch(tmpType)
+	{
+		default:
+		case SHOW_TYPE_SIZE_8:
+			sizeElement = 1;
+			break;
+		case SHOW_TYPE_SIZE_16:
+			sizeElement = 2;
+			break;
+		case SHOW_TYPE_SIZE_FLOAT:
+		case SHOW_TYPE_SIZE_32:
+			sizeElement = 4;
+			break;
+		case SHOW_TYPE_SIZE_DOUBLE:
+		case SHOW_TYPE_SIZE_64:
+			sizeElement = 8;
+			break;
+	}
+	int32_t tmpDela = (fileProp[1].delta - fileProp[0].delta) * sizeElement;
+	displayPaddingOffset(tmpDela);
+	
+	
 	UpdateFilesSize();
 }
 
 
-void CloseFiles(void) {
-	if (NULL != filePointer[0]) {
-		fclose(filePointer[0]);
-		filePointer[0] = NULL;
-	} if (NULL != filePointer[1]) {
-		fclose(filePointer[1]);
-		filePointer[1] = NULL;
+void CloseFiles(void)
+{
+	int32_t iii=0;
+	for (iii=0; iii<2; iii++) {
+		if (NULL != fileProp[iii].pointer) {
+			fclose(fileProp[iii].pointer);
+		}
+		fileProp[iii].pointer = NULL;
+		fileProp[iii].fileBasicOffset = 0;
+		fileProp[iii].type = SHOW_TYPE_UNKNOW;
+		fileProp[iii].typeSize = SHOW_TYPE_SIZE_UNKNOW;
+		fileProp[iii].slotSize = 0;
+		fileProp[iii].delta = 0;
 	}
 }
 
@@ -196,13 +307,8 @@ void CloseFiles(void) {
 int main (int argc, char**argv)
 {
 	int32_t first_Error = 0;
-	filePointer[0] = NULL;
-	filePointer[1] = NULL;
-	strcpy(fileName[0], "No-File");
-	strcpy(fileName[1], "No-File");
-	
+	ResetProperties();
 	UpdateNumberOfRawAndColomn();
-	
 	// check error
 	if (argc < 2) {
 		printf("You set more than 3 argument at the commande line\n");
@@ -217,13 +323,13 @@ int main (int argc, char**argv)
 	}
 	// one file
 	if (basicIDParsing+1 <= argc) {
-		strcpy(fileName[0], argv[basicIDParsing]);
-		filePresent[0] = true;
+		strcpy(fileProp[0].name, argv[basicIDParsing]);
+		fileProp[0].availlable = true;
 	}
 	// a second file
 	if (basicIDParsing+2 <= argc) {
-		strcpy(fileName[1], argv[basicIDParsing+1]);
-		filePresent[1] = true;
+		strcpy(fileProp[1].name, argv[basicIDParsing+1]);
+		fileProp[1].availlable = true;
 	}
 	// open the files
 	OpenFiles();
@@ -231,15 +337,45 @@ int main (int argc, char**argv)
 	// user requested to have the direct error ID of the file...
 	if (directCheckFiles==true) {
 		
+		float dividor = 1;
+		int32_t maxSlot = (fileProp[0].slotSize>fileProp[1].slotSize)?fileProp[0].slotSize:fileProp[1].slotSize;
+		if (0!=maxSlot) {
+			dividor = maxSlot;
+		}
+		
 		int32_t idError = findFirstDiff();
-		int minSizeFile = (filesize[0]<filesize[1])?filesize[0]:filesize[1];
+		int minSizeFile = (fileProp[0].size<fileProp[1].size)?fileProp[0].size:fileProp[1].size;
 		if (minSizeFile<=idError) {
-			printf(" No error : %d /(1:%d;2:%d)", idError, (int)filesize[0], (int)filesize[1]);
+			printf(" No error ... file size=%d Bytes slot=%3d", idError, (int32_t)dividor);
 			CloseFiles();
 			// 0 : no error
 			return 0;
 		} else {
-			printf(" first octet error : %d /(1:%d;2:%d)", idError, (int)filesize[0], (int)filesize[1]);
+			int32_t sizeElement = 1;
+			showTypeSize_te tmpType = getTypeSize();
+			switch(tmpType)
+			{
+				default:
+				case SHOW_TYPE_SIZE_8:
+					sizeElement = 1;
+					break;
+				case SHOW_TYPE_SIZE_16:
+					sizeElement = 2;
+					break;
+				case SHOW_TYPE_SIZE_FLOAT:
+				case SHOW_TYPE_SIZE_32:
+					sizeElement = 4;
+					break;
+				case SHOW_TYPE_SIZE_DOUBLE:
+				case SHOW_TYPE_SIZE_64:
+					sizeElement = 8;
+					break;
+			}
+			int32_t elementIDError = idError/sizeElement;
+			float frameRatio = (float)elementIDError/dividor;
+			int32_t idFrame = frameRatio;
+			int32_t idFrameElement = (frameRatio-idFrame)*dividor;
+			printf("%9d / frame=%9.2f ==> frame=%5d element=%5d slot=%3d", elementIDError, frameRatio, idFrame, idFrameElement, (int32_t)dividor);
 			CloseFiles();
 			return idError;
 		}
@@ -363,10 +499,10 @@ int main (int argc, char**argv)
 						static bool whichElement = false;
 						if (whichElement == false) {
 							whichElement = true;
-							setOfsetFile((filesize[0]/16)*16 - 256);
+							setOfsetFile((fileProp[0].size/16)*16 - 256);
 						} else {
 							whichElement = false;
-							setOfsetFile((filesize[1]/16)*16 - 256);
+							setOfsetFile((fileProp[1].size/16)*16 - 256);
 						}
 					}
 					break;

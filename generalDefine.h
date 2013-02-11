@@ -85,6 +85,7 @@ typedef   signed long long int          int64_t;
 
 
 typedef enum {
+    SHOW_TYPE_UNKNOW,
     SHOW_TYPE_HEX,
     SHOW_TYPE_DECIMAL_SIGNED,
     SHOW_TYPE_DECIMAL_UNSIGNED
@@ -92,12 +93,26 @@ typedef enum {
 
 
 typedef enum {
+    SHOW_TYPE_SIZE_UNKNOW,
     SHOW_TYPE_SIZE_8,
     SHOW_TYPE_SIZE_16,
     SHOW_TYPE_SIZE_32,
     SHOW_TYPE_SIZE_64,
-    SHOW_TYPE_SIZE_128
+    SHOW_TYPE_SIZE_128,
+    SHOW_TYPE_SIZE_FLOAT,
+    SHOW_TYPE_SIZE_DOUBLE
 } showTypeSize_te;
 
+typedef struct {
+	bool availlable;
+	FILE *pointer;
+	uint32_t size;
+	char name[2096];
+	int32_t fileBasicOffset;
+	showType_te type;
+	showTypeSize_te typeSize;
+	int32_t slotSize;
+	int32_t delta;
+} fileProperties_ts;
 
 #endif

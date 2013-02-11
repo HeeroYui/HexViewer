@@ -31,9 +31,11 @@ bool getParamModification();
 void needRedraw(void);
 void nextType(void);
 showType_te getType(void);
+void setType(showType_te newType);
 
 void nextTypeSize(void);
 showTypeSize_te getTypeSize(void);
+void setTypeSize(showTypeSize_te newType);
 
 void displayPaddingOffset(int32_t size);
 void displayPaddingOffsetClear(void);

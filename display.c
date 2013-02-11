@@ -19,8 +19,7 @@
  */
 #include "display.h"
 
-extern FILE *filePointer[2];
-extern char fileName[2][2096];
+extern fileProperties_ts fileProp[2];
 
 
 void drawLine(void)
@@ -72,7 +71,48 @@ void drawLine(void)
 	}
 }
 
-
+const char* getTypeChar(showType_te myType)
+{
+	switch(myType)
+	{
+		case SHOW_TYPE_HEX:
+			return "Hexadecimal ";
+			break;
+		case SHOW_TYPE_DECIMAL_SIGNED:
+			return "Dec Signed  ";
+			break;
+		case SHOW_TYPE_DECIMAL_UNSIGNED:
+			return "Dec Unsigned";
+			break;
+		default :
+			return "?           ";
+			break;
+	}
+}
+const char* getTypeSizeChar(showTypeSize_te mySize)
+{
+	switch(mySize)
+	{
+		case SHOW_TYPE_SIZE_8:
+			return "  8 bits ";
+			break;
+		case SHOW_TYPE_SIZE_16:
+			return " 16 bits ";
+			break;
+		case SHOW_TYPE_SIZE_32:
+			return " 32 bits ";
+			break;
+		case SHOW_TYPE_SIZE_64:
+			return " 64 bits ";
+			break;
+		case SHOW_TYPE_SIZE_128:
+			return "128 bits ";
+			break;
+		default :
+			return "  ? bits ";
+			break;
+	}
+}
 
 void showConfiguration(void)
 {
@@ -88,47 +128,24 @@ void showConfiguration(void)
 	printf(COLOR_GREEN);
 	printf("| hexViewer          |  offset : %7d octets  | ", (int)getOfsetFile());
 	printf("  Type (t) : ");
-	switch(myType)
-	{
-		case SHOW_TYPE_HEX:
-			printf("Hexadecimal     ");
-			break;
-		case SHOW_TYPE_DECIMAL_SIGNED:
-			printf("Decimal Signed  ");
-			break;
-		case SHOW_TYPE_DECIMAL_UNSIGNED:
-			printf("Decimal Unsigned");
-			break;
-		default :
-			printf("?               ");
-			break;
-	}
+	printf("%s", getTypeChar(myType));
 	printf(" | ");
 	printf("  Size (s) : ");
-	switch(mySize)
-	{
-		case SHOW_TYPE_SIZE_8:
-			printf("  8 bits   ");
-			break;
-		case SHOW_TYPE_SIZE_16:
-			printf(" 16 bits   ");
-			break;
-		case SHOW_TYPE_SIZE_32:
-			printf(" 32 bits   ");
-			break;
-		case SHOW_TYPE_SIZE_64:
-			printf(" 64 bits   ");
-			break;
-		case SHOW_TYPE_SIZE_128:
-			printf("128 bits   ");
-			break;
-		default :
-			printf("  ? bits   ");
-			break;
-	}
+	printf("%s", getTypeSizeChar(mySize));
+	
 	printf(COLOR_NORMAL"\n");
-	printf(COLOR_GREEN"| File Left  <<      | " COLOR_BOLD_GREEN "%s\n" COLOR_NORMAL, fileName[0]);
-	printf(COLOR_GREEN"| File Right      >> | " COLOR_BOLD_GREEN "%s\n"COLOR_NORMAL,   fileName[1]);
+	printf(COLOR_GREEN"| File Left  <<      | [%s%s slot=%4d delta=%4d] " COLOR_BOLD_GREEN "%s\n" COLOR_NORMAL,
+	       getTypeChar(fileProp[0].type),
+	       getTypeSizeChar(fileProp[0].typeSize),
+	       fileProp[0].slotSize,
+	       fileProp[0].delta,
+	       fileProp[0].name);
+	printf(COLOR_GREEN"| File Right      >> | [%s%s slot=%4d delta=%4d] " COLOR_BOLD_GREEN "%s\n"COLOR_NORMAL,
+	       getTypeChar(fileProp[1].type),
+	       getTypeSizeChar(fileProp[1].typeSize),
+	       fileProp[1].slotSize,
+	       fileProp[1].delta,
+	       fileProp[1].name);
 
 	printf(COLOR_BOLD_GREEN);
 	drawLine();
@@ -265,6 +282,9 @@ typedef union {
 
 void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosition, int32_t currentPadding)
 {
+	if (filePointer1==NULL && filePointer2==NULL) {
+		return;
+	}
 	inputData_tu data1;
 	inputData_tu data2;
 	uint32_t i;
@@ -351,11 +371,11 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 		int32_t readStartFile1 = 16;
 		if (filePointer1 != NULL) {
 			if (positionStartDisplayFile1 >= 0) {
-				fseek(filePointer1 , positionStartDisplayFile1 , SEEK_SET );
+				fseek(filePointer1 , positionStartDisplayFile1+fileProp[0].fileBasicOffset , SEEK_SET );
 				readFile1 = fread(data1.data_8, sizeof(uint8_t), 16, filePointer1);
 				readStartFile1 = 0;
 			} else if (positionStartDisplayFile1 > -NB_DATA_PER_LINE*4) {
-				fseek(filePointer1 , 0 , SEEK_SET );
+				fseek(filePointer1 , fileProp[0].fileBasicOffset , SEEK_SET );
 				// Special case of the partial display ...
 				readFile1 = fread(data1.data_8 - positionStartDisplayFile1, sizeof(uint8_t), NB_DATA_PER_LINE*4 + positionStartDisplayFile1, filePointer1);
 				readStartFile1 = NB_DATA_PER_LINE*4 - readFile1;
@@ -366,11 +386,11 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 		int32_t readStartFile2 = 16;
 		if (filePointer2 != NULL) {
 			if (positionStartDisplayFile2 >= 0) {
-				fseek(filePointer2 , positionStartDisplayFile2 , SEEK_SET );
+				fseek(filePointer2 , positionStartDisplayFile2+fileProp[1].fileBasicOffset , SEEK_SET );
 				readFile2 = fread(data2.data_8, sizeof(uint8_t), 16, filePointer2);
 				readStartFile2 = 0;
 			} else if (positionStartDisplayFile2 > -NB_DATA_PER_LINE*4) {
-				fseek(filePointer2 , 0 , SEEK_SET );
+				fseek(filePointer2 , fileProp[1].fileBasicOffset , SEEK_SET );
 				// Special case of the partial display ...
 				readFile2 = fread(data2.data_8 - positionStartDisplayFile2, sizeof(uint8_t), NB_DATA_PER_LINE*4 + positionStartDisplayFile2, filePointer2);
 				readStartFile2 = NB_DATA_PER_LINE*4 - readFile2;
@@ -617,7 +637,7 @@ void * threadDisplay (void * p_data)
 		if (getParamModification()) {
 			uint32_t curentFilePosition = getOfsetFile();
 			uint32_t curentFilePadding  = getPaddingOffsetFile();
-			compareFile(filePointer[0],filePointer[1], curentFilePosition, curentFilePadding);
+			compareFile(fileProp[0].pointer,fileProp[1].pointer, curentFilePosition, curentFilePadding);
 		} else {
 			usleep(10000);
 		}
