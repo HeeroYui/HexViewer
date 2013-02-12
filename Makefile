@@ -96,3 +96,7 @@ package: all
 	@#cp -vf data/*.xml package/$(PROG_NAME)/usr/share/edn/
 	@cd package; dpkg-deb --build $(PROG_NAME)
 
+install:
+	sudo cp -fv hexViewer /usr/bin/hexViewer
+
+

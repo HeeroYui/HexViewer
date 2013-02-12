@@ -220,6 +220,9 @@ void OpenFiles(void)
 		}
 		if (fileProp[0].slotSize == fileProp[1].slotSize) {
 			setSlotSize(fileProp[0].slotSize);
+			if (fileProp[0].slotSize>0) {
+				setSlotDisplayMode(true);
+			}
 		} else {
 			printf("Error The 2 files has not the same header slotSize properties header ... \n");
 		}
@@ -227,10 +230,16 @@ void OpenFiles(void)
 		setTypeSize(fileProp[0].typeSize);
 		setType(fileProp[0].type);
 		setSlotSize(fileProp[0].slotSize);
+		if (fileProp[0].slotSize>0) {
+			setSlotDisplayMode(true);
+		}
 	} else if (fileProp[1].fileBasicOffset!=0) {
 		setTypeSize(fileProp[1].typeSize);
 		setType(fileProp[1].type);
 		setSlotSize(fileProp[1].slotSize);
+		if (fileProp[1].slotSize>0) {
+			setSlotDisplayMode(true);
+		}
 	}
 	int32_t sizeElement=1;
 	showTypeSize_te tmpType = getTypeSize();
@@ -317,9 +326,9 @@ int main (int argc, char**argv)
 		}
 		
 		int32_t idError = findFirstDiff();
-		int minSizeFile = (fileProp[0].size<fileProp[1].size)?fileProp[0].size:fileProp[1].size;
+		int minSizeFile = ((fileProp[0].size<fileProp[1].size)?fileProp[0].size:fileProp[1].size) - abs(getPaddingOffsetFile());
 		if (minSizeFile<=idError) {
-			printf(" No error ... file size=%d Bytes slot=%3d", idError, (int32_t)dividor);
+			printf(" --- slot=%3d nb frame=%d", (int32_t)dividor, (int32_t)(idError/dividor));
 			CloseFiles();
 			// 0 : no error
 			return 0;
