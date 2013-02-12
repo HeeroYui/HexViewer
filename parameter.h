@@ -50,5 +50,18 @@ int32_t GetNumberOfColomn(void);
 
 void CleanDisplay(void);
 
+// if 0 ==> disable ...
+int32_t getSlotSize(void);
+void setSlotSize(int32_t newSize);
+void setSlotDisplayMode(bool enable);
+bool getSlotDisplayMode(void);
+
+
+
+void setHelpDisplay(bool enable);
+bool getHelpDisplay(void);
+
+void usage(void);
+
 #endif
 

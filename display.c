@@ -22,7 +22,7 @@
 extern fileProperties_ts fileProp[2];
 
 
-void drawLine(void)
+void drawLine(bool returnLine)
 {
 	showTypeSize_te mySize = getTypeSize();
 	showType_te myType = getType();
@@ -33,16 +33,16 @@ void drawLine(void)
 			switch(mySize)
 			{
 				case SHOW_TYPE_SIZE_8:
-					printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_16:
-					printf("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_32:
-					printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_64:
-					printf("-------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("-------------------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				default:
 					break;
@@ -53,21 +53,26 @@ void drawLine(void)
 			switch(mySize)
 			{
 				case SHOW_TYPE_SIZE_8:
-					printf("---------------------------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("---------------------------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_16:
-					printf("-----------------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("-----------------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_32:
-					printf("---------------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("---------------------------------------------------------------------------------------------------------------------------");
 					break;
 				case SHOW_TYPE_SIZE_64:
-					printf("-----------------------------------------------------------------------------------------------------------------------\n"COLOR_NORMAL);
+					printf("-----------------------------------------------------------------------------------------------------------------------");
 					break;
 				default:
 					break;
 			}
 			break;
+	}
+	if (returnLine==true) {
+		printf("\n"COLOR_NORMAL);
+	} else {
+		printf("\r"COLOR_NORMAL);
 	}
 }
 
@@ -124,14 +129,15 @@ void showConfiguration(void)
 	printf(GO_TOP);
 	
 	printf(COLOR_BOLD_GREEN);
-	drawLine();
+	drawLine(true);
 	printf(COLOR_GREEN);
-	printf("| hexViewer          |  offset : %7d octets  | ", (int)getOfsetFile());
-	printf("  Type (t) : ");
-	printf("%s", getTypeChar(myType));
+	printf("| hexViewer          |  offset : %7d octets ", (int)getOfsetFile());
+	printf(" | Type (t) : %s", getTypeChar(myType));
 	printf(" | ");
-	printf("  Size (s) : ");
-	printf("%s", getTypeSizeChar(mySize));
+	printf(" | Size (s) : %s", getTypeSizeChar(mySize));
+	printf(" | Slot (u+/i-/j/k) : %d (%s)", getSlotSize(), (getSlotDisplayMode()?"enable ":"disable"));
+	printf(" | Padding (o+/p-/m) : %d ", getPaddingOffsetFile());
+	printf(" | ");
 	
 	printf(COLOR_NORMAL"\n");
 	printf(COLOR_GREEN"| File Left  <<      | [%s%s slot=%4d delta=%4d] " COLOR_BOLD_GREEN "%s\n" COLOR_NORMAL,
@@ -148,7 +154,7 @@ void showConfiguration(void)
 	       fileProp[1].name);
 
 	printf(COLOR_BOLD_GREEN);
-	drawLine();
+	drawLine(true);
 }
 
 void printNoElement(showType_te localType, showTypeSize_te localSize)
@@ -288,7 +294,7 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 	inputData_tu data1;
 	inputData_tu data2;
 	uint32_t i;
-	uint32_t j;
+	uint32_t jjj;
 	
 	showConfiguration();
 	
@@ -350,8 +356,34 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 	
 	// Display the main show
 	printf(COLOR_BOLD_YELLOW);
-	drawLine();
-	for (j=0; j < (uint32_t)(GetNumberOfRaw()-NB_HEARDER_RAW); j++) {
+	drawLine(true);
+	int32_t counterLineID;
+	int32_t offsetDisplaySlot=0;
+	int32_t sizeSlotByte;
+	switch(getTypeSize())
+	{
+		default:
+		case SHOW_TYPE_SIZE_8:
+			sizeSlotByte = 1*getSlotSize();
+			break;
+		case SHOW_TYPE_SIZE_16:
+			sizeSlotByte = 2*getSlotSize();
+			break;
+		case SHOW_TYPE_SIZE_FLOAT:
+		case SHOW_TYPE_SIZE_32:
+			sizeSlotByte = 4*getSlotSize();
+			break;
+		case SHOW_TYPE_SIZE_DOUBLE:
+		case SHOW_TYPE_SIZE_64:
+			sizeSlotByte = 8*getSlotSize();
+			break;
+	}
+	if (true == getSlotDisplayMode() && 0<getSlotSize()) {
+		int32_t nbElementToRead = NB_DATA_PER_LINE*4;
+		int32_t positionInSlot = curentFilePosition%sizeSlotByte;
+		offsetDisplaySlot = positionInSlot%nbElementToRead;
+	}
+	for (jjj=0, counterLineID=0; jjj < (uint32_t)(GetNumberOfRaw()-NB_HEARDER_RAW); jjj++, counterLineID++) {
 		uint32_t readFile1 = 0;
 		uint32_t readFile2 = 0;
 		int32_t lineNumber = 0;
@@ -359,20 +391,48 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 		// read data in files : 
 		memset(data1.data_8, 0, 16 * sizeof(uint8_t));
 		memset(data2.data_8, 0, 16 * sizeof(uint8_t));
+		
 		// Generate the ofset in the file
-		int32_t positionStartDisplayFile1 = curentFilePosition + j*NB_DATA_PER_LINE*4;
-		int32_t positionStartDisplayFile2 = curentFilePosition + j*NB_DATA_PER_LINE*4;
+		int32_t positionStartDisplayFile1 = curentFilePosition + offsetDisplaySlot;
+		int32_t positionStartDisplayFile2 = curentFilePosition + offsetDisplaySlot;
 		if (currentPadding < 0) {
 			positionStartDisplayFile1 += currentPadding;
 		} else {
 			positionStartDisplayFile2 -= currentPadding;
 		}
+		if (true == getSlotDisplayMode() && 0<getSlotSize()) {
+			if (positionStartDisplayFile1%sizeSlotByte==0) {
+				drawLine(false);
+				printf(" Frame | %9d |\n", positionStartDisplayFile1/sizeSlotByte);
+				jjj++;
+			}
+			if (jjj >= (uint32_t)(GetNumberOfRaw()-NB_HEARDER_RAW)) {
+				return;
+			}
+		}
+		
+		
+		
+		int32_t nbElementToRead = NB_DATA_PER_LINE*4;
+		if (true == getSlotDisplayMode() && 0<getSlotSize()) {
+			int32_t posituionInSlot = positionStartDisplayFile1%sizeSlotByte;
+			if (posituionInSlot+nbElementToRead>sizeSlotByte) {
+				nbElementToRead = sizeSlotByte - posituionInSlot;
+			}
+		}
+		/*
+		if (nbElementToRead != NB_DATA_PER_LINE*4) {
+			printf("                                                                                              \r");
+			printf("nbElementToRead=%d\n",nbElementToRead);
+			jjj++;
+		}
+		*/
 		readFile1 = 0;
 		int32_t readStartFile1 = 16;
 		if (filePointer1 != NULL) {
 			if (positionStartDisplayFile1 >= 0) {
 				fseek(filePointer1 , positionStartDisplayFile1+fileProp[0].fileBasicOffset , SEEK_SET );
-				readFile1 = fread(data1.data_8, sizeof(uint8_t), 16, filePointer1);
+				readFile1 = fread(data1.data_8, sizeof(uint8_t), nbElementToRead, filePointer1);
 				readStartFile1 = 0;
 			} else if (positionStartDisplayFile1 > -NB_DATA_PER_LINE*4) {
 				fseek(filePointer1 , fileProp[0].fileBasicOffset , SEEK_SET );
@@ -387,7 +447,7 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 		if (filePointer2 != NULL) {
 			if (positionStartDisplayFile2 >= 0) {
 				fseek(filePointer2 , positionStartDisplayFile2+fileProp[1].fileBasicOffset , SEEK_SET );
-				readFile2 = fread(data2.data_8, sizeof(uint8_t), 16, filePointer2);
+				readFile2 = fread(data2.data_8, sizeof(uint8_t), nbElementToRead, filePointer2);
 				readStartFile2 = 0;
 			} else if (positionStartDisplayFile2 > -NB_DATA_PER_LINE*4) {
 				fseek(filePointer2 , fileProp[1].fileBasicOffset , SEEK_SET );
@@ -619,6 +679,8 @@ void compareFile(FILE *filePointer1, FILE *filePointer2 ,int32_t curentFilePosit
 		} else {
 			printf(COLOR_BOLD_MAGENTA" |         "COLOR_BOLD_YELLOW"|           "COLOR_NORMAL " |\n");
 		}
+		// update file positions :
+		offsetDisplaySlot += nbElementToRead;
 	}
 }
 
@@ -638,6 +700,10 @@ void * threadDisplay (void * p_data)
 			uint32_t curentFilePosition = getOfsetFile();
 			uint32_t curentFilePadding  = getPaddingOffsetFile();
 			compareFile(fileProp[0].pointer,fileProp[1].pointer, curentFilePosition, curentFilePadding);
+			if (true==getHelpDisplay()) {
+				showConfiguration();
+				usage();
+			}
 		} else {
 			usleep(10000);
 		}

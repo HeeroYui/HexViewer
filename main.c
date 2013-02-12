@@ -24,40 +24,6 @@
 
 fileProperties_ts fileProp[2];
 
-void usage(void)
-{
-	printf("usage : hexViwer [option] [file_1] [file_2]\n");
-	printf("\t[option] : options:\n");
-	printf("\t\t[-d] : direct check of the error ...\n");
-	printf("\t[file_1] : Show the first file  only\n");
-	printf("\t[file_2] : if it was precise : Show the comparaison with the first file\n");
-	printf("\t\n");
-	printf("\tInside Usage : \n");
-	printf("\t\t[a]     Go to the start of the files\n");
-	printf("\t\t[z]     Go to the end of the files (the first push is the File 1, the second push is the file 2) \n");
-	printf("\t\t[q]     Quit the curent program\n");
-	printf("\t\t[s]     Change the view of the propram of the size of interpretation (8/16/32/64 bits)\n");
-	printf("\t\t[t]     Change the interpretation of Data (hexedecimal, Signed Decimal, Unigned Decimal)\n");
-	printf("\t\t[f]     Find the first Error when comparing the two files\n");
-	printf("\t\t[c]     Calibrate the delta between the 2 file (fist element !=0)\n");
-	printf("\t\t[UP]    Go up (5 lines)\n");
-	printf("\t\t[DOWN]  Go down (5 lines)\n");
-	printf("\t\t[LEFT]  Go up (one screen)\n");
-	printf("\t\t[RIGHT] Go down (one screen)\n");
-	printf("\t\tAdd padding : \n");
-	printf("\t\t\t[o]   Add  1 Byte  padding at the left file\n");
-	printf("\t\t\t[O]   Add 16 Bytes padding at the left file\n");
-	printf("\t\t\t[p]   Add  1 Byte  padding at the right file\n");
-	printf("\t\t\t[P]   Add 16 Bytes padding at the right file\n");
-	printf("\t\t\t[m]   reset padding\n");
-	printf("\t\n");
-	printf("\tCopyright: 2010 Edouard DUPIN, all right reserved\n");
-	printf("\tLicense: GNU Lesser General Public License (LGPL) v3.0\n");
-}
-
-
-
-
 int32_t findFirstDiff(void)
 {
 	uint8_t data1, data2;
@@ -245,19 +211,26 @@ void OpenFiles(void)
 		if (fileProp[0].typeSize == fileProp[1].typeSize) {
 			setTypeSize(fileProp[0].typeSize);
 		} else {
-			printf("Error The 2 files has not the same header properties header ... \n");
+			printf("Error The 2 files has not the same header typeSize properties header ... \n");
 		}
 		if (fileProp[0].type == fileProp[1].type) {
 			setType(fileProp[0].type);
 		} else {
-			printf("Error The 2 files has not the same header properties header ... \n");
+			printf("Error The 2 files has not the same header type properties header ... \n");
+		}
+		if (fileProp[0].slotSize == fileProp[1].slotSize) {
+			setSlotSize(fileProp[0].slotSize);
+		} else {
+			printf("Error The 2 files has not the same header slotSize properties header ... \n");
 		}
 	} else if (fileProp[0].fileBasicOffset!=0) {
 		setTypeSize(fileProp[0].typeSize);
 		setType(fileProp[0].type);
+		setSlotSize(fileProp[0].slotSize);
 	} else if (fileProp[1].fileBasicOffset!=0) {
 		setTypeSize(fileProp[1].typeSize);
 		setType(fileProp[1].type);
+		setSlotSize(fileProp[1].slotSize);
 	}
 	int32_t sizeElement=1;
 	showTypeSize_te tmpType = getTypeSize();
@@ -515,6 +488,30 @@ int main (int argc, char**argv)
 					OpenFiles();
 					needRedraw();
 					break;
+				// Display Slot mode :
+				case 'j':
+				case 'J':
+					setSlotDisplayMode((getSlotDisplayMode()==true)?false:true);
+					needRedraw();
+					break;
+				case 'U':
+					setSlotSize(getSlotSize()-9);
+				case 'u':
+					setSlotSize(getSlotSize()-1);
+					needRedraw();
+					break;
+				case 'I':
+					setSlotSize(getSlotSize()+9);
+				case 'i':
+					setSlotSize(getSlotSize()+1);
+					needRedraw();
+					break;
+				case 'k':
+				case 'K':
+					setSlotSize(0);
+					setSlotDisplayMode(false);
+					needRedraw();
+					break;
 				// Add padding offset between left an right file
 				case 'o':
 					displayPaddingOffset(-1);
@@ -536,6 +533,11 @@ int main (int argc, char**argv)
 				case 'c':
 				case 'C':
 					AutoSetPadding();
+					break;
+				case 'h':
+				case 'H':
+					setHelpDisplay((getHelpDisplay()==true)?false:true);
+					needRedraw();
 					break;
 			}
 		}
